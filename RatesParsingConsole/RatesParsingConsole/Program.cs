@@ -6,7 +6,7 @@ namespace RatesParsingConsole
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hell to World!");
+            Console.WriteLine("Test commit");
         }
     }
 }
