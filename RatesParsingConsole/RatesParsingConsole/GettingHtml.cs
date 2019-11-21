@@ -73,14 +73,14 @@ namespace RatesParsingConsole
             var document = new HtmlDocument();
             try
             {
-                document.Load(Settings.HttpFileName);
+                document.Load(FileName);
             }
             catch
             {
-                Console.WriteLine($"Файл \"...\\{Settings.HttpFileName}\" не найден.\n");
+                Console.WriteLine($"Файл \"...\\{FileName}\" не найден.\n");
                 return null;
             }
-            Console.WriteLine($"Файл \"...\\{Settings.HttpFileName}\" успешно открыт.\n");
+            Console.WriteLine($"Файл \"...\\{FileName}\" успешно открыт.\n");
             return document;
         }
         /// <summary>
@@ -94,7 +94,7 @@ namespace RatesParsingConsole
             var document = new HtmlDocument();
             try
             {
-                document = web.Load(Settings.HttpUrl);
+                document = web.Load(URL);
             }
             catch (UriFormatException)
             {
