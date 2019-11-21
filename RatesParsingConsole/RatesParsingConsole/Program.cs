@@ -1,66 +1,49 @@
 ﻿using System;
 using HtmlAgilityPack;
+using System.Collections.Generic;
+using RatesParsingConsole.RateDataBase;
 
 namespace RatesParsingConsole
 {
     class Program
     {
-        // Загрузить html файл с жесткого диска и вывести в консоль заголовок страницы. То же самое проделать со страницей из интернета.
+        /// <summary>
+        /// Получает курсы обмена валют с различных банков и сохраняет в базу (то что в будущем будет делать MVC приложение).
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
-            // Установить параметры для парсинга (имя файла и адрес страницы).
-            var parseSettings = new ParseSettings
+            // Коллекция курсов по каждому банку (типа БД).
+            List<BankRatesData> Banks = new List<BankRatesData>();
+
+            // Список запросов к банкам.
+            List<RequestBankData> requests = GetRequestBankDatas();
+
+            // Перебрать список запросов и получить данные по валютам.
+            foreach (var req in requests)
             {
-                HttpFileName = @"Other\Sites\Georgia\National Bank Of Georgia.html",
-                HttpUrl = "https://www.nbg.gov.ge/index.php?m=582&lng=eng"
-            };
-
-            // Получить инструкции JSON. 
-            // Пока не пилил, просто пропишем XPath.
-            string xPath = "/html/head/title";
-
-            // Инструмент для получения html страниц.
-            var gettingHtml = new GettingHtml(parseSettings);
-
-            // Получить html документ из файла.
-            Console.WriteLine("Получить документ из файла:");
-            HtmlDocument HtmlDocFile = gettingHtml.GetHtmlDocumentFromFile();
-            // При успешном открытии вывести заголовок документа.            
-            if (HtmlDocFile != null)
-            {
-                Console.WriteLine("Заголовок страницы из файла:");
-                Console.WriteLine(GetHtmlHead(HtmlDocFile, xPath));
+                Banks.Add(GetBankRatesData(req));
             }
-            Console.WriteLine();
-            
-            
-            // Получить html документ из интернета.      
-            Console.WriteLine("Нажмите любую клавишу для загрузки страницы из интернета.");
-            Console.ReadKey();
-            Console.WriteLine("\n\n");
-            Console.WriteLine("Получить документ из интернета:");
-            HtmlDocument HtmlDocWeb = gettingHtml.GetHtmlDocumentFromWeb();
-            // При успешном открытии вывести заголовок документа.            
-            if (HtmlDocWeb != null)
-            {
-                Console.WriteLine("Заголовок страницы из интернета:");
-                Console.WriteLine(GetHtmlHead(HtmlDocWeb, xPath));
-            }
-            Console.ReadKey();
         }
 
         /// <summary>
-        /// Получить заголовок страницы.
+        /// Получить список запросов к банкам.
         /// </summary>
-        /// <param name="htmlDocument">Объект html документа.</param>
-        /// <param name="xPath">Текст внутри тега по адресу XPath.</param>
         /// <returns></returns>
-        private static string GetHtmlHead(HtmlDocument htmlDocument, string xPath)
+        public static List<RequestBankData> GetRequestBankDatas()
         {
-            //Console.WriteLine();
-            string HtmlHead = htmlDocument.DocumentNode.SelectSingleNode(xPath).InnerText;
-            Console.WriteLine();
-            return HtmlHead;
+            return null;
         }
+
+        /// <summary>
+        /// Получить данные курсов конкретного банка.
+        /// </summary>
+        /// <param name="requestBankData">Данные для получения курса</param>
+        /// <returns></returns>
+        public static BankRatesData GetBankRatesData(RequestBankData requestBankData)
+        {
+            return null;
+        }
+
     }
 }
