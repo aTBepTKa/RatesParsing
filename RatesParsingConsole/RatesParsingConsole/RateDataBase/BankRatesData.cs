@@ -18,5 +18,10 @@ namespace RatesParsingConsole.RateDataBase
         /// Страна расположения банка.
         /// </summary>
         public CountryData BankCountry { get; set; }
+
+        public BankRatesData()
+        {
+            BankCountry = new CountryData();
+        }
     }
 }

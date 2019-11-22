@@ -13,7 +13,7 @@ namespace RatesParsingConsole
         /// <summary>
         /// Страна банка.
         /// </summary>
-        public CountryData CountryData { get; set; }
+        public CountryData BankCountry { get; set; }
 
         /// <summary>
         /// Ссылка на страницу с курсами.
@@ -21,8 +21,13 @@ namespace RatesParsingConsole
         public string RatesUrlPage { get; set; }
 
         /// <summary>
-        /// Сценарий парсинга страницы.
+        /// XPath пути для получения данных о валюте.
         /// </summary>
-        public object ParsingScript { get; set; }
+        public CurrencyXPathes XPathes { get; set; }
+
+        public RequestBankData()
+        {
+            BankCountry = new CountryData();
+        }
     }
 }

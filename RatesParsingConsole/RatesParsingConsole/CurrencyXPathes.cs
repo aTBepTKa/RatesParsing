@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.RateDataBase
+namespace RatesParsingConsole
 {
     /// <summary>
-    /// Содержит данные о валюте.
+    /// Содержит XPath пути для валюты.
     /// </summary>
-    class CurrencyData
+    class CurrencyXPathes
     {
         /// <summary>
         /// Сокращенное название валюты.
@@ -22,11 +22,10 @@ namespace RatesParsingConsole.RateDataBase
         /// <summary>
         /// Единица измерения валюты.
         /// </summary>
-        public int Unit { get; set; }
+        public string Unit { get; set; }
 
         /// <summary>
         /// Обменный курс валюты.
-        /// ОБЯЗАТЕЛЬНО ПЕРЕДЕЛАТЬ В ЧИСЛОВОЙ ФОРМАТ
         /// </summary>
         public string ExchangeRate { get; set; }
     }
