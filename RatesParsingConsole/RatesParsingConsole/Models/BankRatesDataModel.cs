@@ -2,26 +2,27 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.RateDataBase
+namespace RatesParsingConsole.Models
 {
     /// <summary>
     /// Данные курсов валют банка.
     /// </summary>
-    class BankRatesData
+    class BankRatesDataModel
     {
         /// <summary>
         /// Курсы валют банка.
         /// </summary>
-        public List<CurrencyData> CurrencyDatas { get; set; }
+        public IEnumerable<CurrencyDataModel> CurrencyDatas { get; set; }
 
         /// <summary>
         /// Страна расположения банка.
         /// </summary>
-        public CountryData BankCountry { get; set; }
+        public CountryDataModel BankCountry { get; set; }
 
-        public BankRatesData()
+        // Так можно делать?
+        public BankRatesDataModel()
         {
-            BankCountry = new CountryData();
+            BankCountry = new CountryDataModel();
         }
     }
 }

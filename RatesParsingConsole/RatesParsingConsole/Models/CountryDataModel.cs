@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.RateDataBase
+namespace RatesParsingConsole.Models
 {
+    // Подумать о том, чтобы выпилить этот класс к хуям собачьим.
     /// <summary>
     /// Наименование страны и государственной денежной еденицы.
     /// </summary>
-    class CountryData
+    class CountryDataModel
     {
         /// <summary>
-        /// Обозначение наименования страны (BLR).
+        /// Обозначение наименования страны (BRL).
         /// </summary>
         public string ShortName { get; set; }  
 
@@ -22,7 +23,7 @@ namespace RatesParsingConsole.RateDataBase
         /// <summary>
         /// Национальная валюта страны.
         /// </summary>
-        public CurrencyData NationalCurrency { get; set; }
+        public CurrencyDataModel NationalCurrency { get; set; }
 
         /// <summary>
         /// Наименование банка.

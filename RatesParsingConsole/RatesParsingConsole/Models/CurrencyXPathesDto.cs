@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole
+namespace RatesParsingConsole.Models
 {
     /// <summary>
     /// Содержит XPath пути для валюты.
     /// </summary>
-    class CurrencyXPathes
+    class CurrencyXPathesDto
     {
         /// <summary>
         /// Сокращенное название валюты.

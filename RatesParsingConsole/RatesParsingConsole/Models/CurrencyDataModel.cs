@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.RateDataBase
+namespace RatesParsingConsole.Models
 {
     /// <summary>
     /// Содержит данные о валюте.
     /// </summary>
-    class CurrencyData
+    class CurrencyDataModel
     {
         /// <summary>
         /// Сокращенное название валюты.
@@ -26,8 +26,7 @@ namespace RatesParsingConsole.RateDataBase
 
         /// <summary>
         /// Обменный курс валюты.
-        /// ОБЯЗАТЕЛЬНО ПЕРЕДЕЛАТЬ В ЧИСЛОВОЙ ФОРМАТ
         /// </summary>
-        public string ExchangeRate { get; set; }
+        public decimal ExchangeRate { get; set; }
     }
 }
