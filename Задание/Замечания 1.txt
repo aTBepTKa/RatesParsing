@@ -1,0 +1,33 @@
+1. public static List<RequestBankData> GetRequestBankDatas()
+1.1. Методы возвращающие коллекции должны возвращать не явную её реализацию, а интерфейс IEnumerable.
+1.2. Зачем метод объявлен как public, если используется только внутри класса?
+2. Никогда не возвращай null из метода. Используй Array.Empty<T>() или Enumerable.Empty<T>().
+3. Все модели данных должны быть в папке Models.
+4. В названии класса-модели должен быть постфикс:
+"" - не нужен это слой-источник данных.
+"Dto" (Data Transfer Object) если это слой сервиса.
+"Model" если это слой представления.
+5. У классов должны быть модификаторы доступа public, чтобы они были видны за пределами сборки. Если ты не указал модификатор доступа, по умолчанию компилятор добавит internal.
+6. public List<CurrencyData> CurrencyDatas { get; set; }
+Надо заменить List на IEnumerable.
+7. public double ExchangeRate { get; set; }
+Никогда не используй типы double или float для переменных которые могут быть использованы в расчете денег, т.к. они теряют точность. Только decimal.
+8. Сокращенное название валюты. Полное название валюты.
+Достаточно Alpha3Code.
+9. Обозначение наименования страны (BLR).
+Обычно используется Alpha2Code.
+10. class RequestBankData
+Слова Request, Response и т.п. принято добавлять в конец названия класса/интерфейса.
+11. public object ParsingScript { get; set; }
+Если сценарий будет JSON-формате, то это строка.
+12. public GettingHtml() { }
+Нет смысла определять пустой конструктор без параметров. Компилятор создаст его сам.
+13. getHtmlDocumentFromFile
+Так и остался с маленькой буквы. Сделай один метод в котором параметр fileName будет необязательным. Получится так:
+public HtmlDocument GetHtmlDocumentFromFile(string fileName = null)
+{
+return getHtmlDocumentFromFile(fileName ?? Settings.HttpFileName);
+}
+Аналогично GetHtmlDocumentFromWeb.
+14. Пустой блок catch это плохой стиль. На худой конец выводи Message исключения.
+В настоящем приложении надо залогировать исключение и пробросить его дальше.

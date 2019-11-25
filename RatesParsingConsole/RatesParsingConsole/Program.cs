@@ -17,7 +17,7 @@ namespace RatesParsingConsole
             // Получить список запросов к банкам.
             var requestFactory = new RequestFactory();
             IEnumerable<BankDataRequestDto> requests = requestFactory.GetRequestBankDatas();
-
+            
             // Получить данные по валютам (видимо эта часть выпилится в консольное приложение, но пока до конца не ясно).
             var exchangeRatesFactory = new ExchangeRatesFactory();
             IEnumerable<BankRatesDataModel> banks = exchangeRatesFactory.GetBankRatesDatas(requests);
