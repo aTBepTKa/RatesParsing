@@ -10,19 +10,18 @@ namespace RatesParsingConsole.Models
     class BankRatesDataModel
     {
         /// <summary>
-        /// Курсы валют банка.
+        /// Название банка.
         /// </summary>
-        public IEnumerable<CurrencyDataModel> CurrencyDatas { get; set; }
+        public string BankName { get; set; }
 
         /// <summary>
-        /// Страна расположения банка.
+        /// Код валюты банка.
         /// </summary>
-        public CountryDataModel BankCountry { get; set; }
+        public string BankCurrency { get; set; }
 
-        // Так можно делать?
-        public BankRatesDataModel()
-        {
-            BankCountry = new CountryDataModel();
-        }
+        /// <summary>
+        /// Курсы валют банка.
+        /// </summary>
+        public IEnumerable<CurrencyDataModel> ExchangeRates { get; set; }
     }
 }

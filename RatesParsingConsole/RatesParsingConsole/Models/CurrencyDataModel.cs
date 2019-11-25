@@ -12,7 +12,7 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Сокращенное название валюты.
         /// </summary>
-        public string ShortName { get; set; }
+        public string CurrencyName { get; set; }
 
         /// <summary>
         /// Полное название валюты.

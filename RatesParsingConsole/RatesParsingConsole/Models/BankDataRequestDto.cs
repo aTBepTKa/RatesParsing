@@ -11,11 +11,6 @@ namespace RatesParsingConsole.Models
     class BankDataRequestDto
     {
         /// <summary>
-        /// Страна банка.
-        /// </summary>
-        public CountryDataModel BankCountry { get; set; }
-
-        /// <summary>
         /// Ссылка на страницу с курсами.
         /// </summary>
         public string RatesUrlPage { get; set; }
@@ -31,13 +26,8 @@ namespace RatesParsingConsole.Models
         public string NumberDecimalSeparator { get; set; }
 
         /// <summary>
-        /// Разделитель групп разрядов числа.
+        /// Разделитель десятичной части числа.
         /// </summary>
         public string NumberGroupSeparator { get; set; }
-
-        public BankDataRequestDto()
-        {
-            BankCountry = new CountryDataModel();
-        }
     }
 }

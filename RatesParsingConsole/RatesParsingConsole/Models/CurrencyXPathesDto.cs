@@ -4,6 +4,7 @@ using System.Text;
 
 namespace RatesParsingConsole.Models
 {
+    // TODO: Выпилить из модели Dto после прикручивания JSON.
     /// <summary>
     /// Содержит XPath пути для валюты.
     /// </summary>

@@ -14,26 +14,25 @@ namespace RatesParsingConsole
         /// Получить список запросов к банкам. Здесь будем парсить JSON.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<BankDataRequestDto> GetRequestBankDatas()
+        public IEnumerable<BankDataRequestDto> GetBankDataRequests()
         {
             // Сформировать запрос к одному банку.
-            var requestBankData = new BankDataRequestDto();
+            var requestBankDataDto = new BankDataRequestDto();
 
             // Установить адрес запрашиваемой страницы и название банка.
-            requestBankData.RatesUrlPage = "https://www.nbg.gov.ge/index.php?m=582&lng=eng";
-            requestBankData.BankCountry.BankName = "National Bank of Georgia";
+            requestBankDataDto.RatesUrlPage = "https://www.nbg.gov.ge/index.php?m=582&lng=eng";
 
             // Назначить разделитель для числа.
-            requestBankData.NumberDecimalSeparator = ".";
-            requestBankData.NumberGroupSeparator = ",";
+            requestBankDataDto.NumberDecimalSeparator = ".";
+            requestBankDataDto.NumberGroupSeparator = ",";
 
             // Получить сценарий парсинга.
-            requestBankData.XPathes = GetParsingScript();
+            requestBankDataDto.XPathes = GetParsingScript();
 
             // Сформировать коллекцию запросов. Работаем пока с одним банком.
             var requestBankDataList = new List<BankDataRequestDto>
             {
-                requestBankData
+                requestBankDataDto
             };
 
             return requestBankDataList;

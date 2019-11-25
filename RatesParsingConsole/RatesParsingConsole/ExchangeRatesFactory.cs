@@ -13,58 +13,43 @@ namespace RatesParsingConsole
     class ExchangeRatesFactory
     {
         /// <summary>
-        /// Получить списки курсов валют по банкам.
+        /// Получить курсы валют банка.
         /// </summary>
-        /// <param name="bankDataRequestDtos">Список запросов для банков.</param>
+        /// <param name="request">Данные для запроса банку.</param>
         /// <returns></returns>
-        public IEnumerable<BankRatesDataModel> GetBankRatesDatas(IEnumerable<BankDataRequestDto> requests)
+        public IEnumerable<CurrencyDataModel> GetBankRatesDatas(BankDataRequestDto request)
         {
-            // Коллекция банков.
-            var banks = new List<BankRatesDataModel>();
-
-            // Перебрать запросы по банкам и получить курсы валют.
-            foreach (var req in requests)
-            {
-                BankRatesDataModel ratesData = GetBankRatesData(req);
-                if (ratesData == null)
-                    Console.WriteLine($"Ошибка при загрузке данных из банка {req.BankCountry.BankName}.");
-                else
-                    banks.Add(ratesData);
-            }
-            return banks;
+            // Получить курсы валют.
+            IEnumerable<CurrencyDataModel> currencyDatas = GetExchangeRatesData(request);
+            if (currencyDatas == null)
+                Console.WriteLine($"Ошибка при загрузке данных из {request.RatesUrlPage}.");
+            return currencyDatas;
         }
 
         /// <summary>
-        /// Получить данные курсов конкретного банка.
+        /// Получить данные курсов банка.
         /// </summary>
-        /// <param name="bankDataRequest">Данные для получения курса</param>
+        /// <param name="request">Данные для получения курса</param>
         /// <returns></returns>
-        private BankRatesDataModel GetBankRatesData(BankDataRequestDto bankDataRequest)
+        private IEnumerable<CurrencyDataModel> GetExchangeRatesData(BankDataRequestDto request)
         {
             // Получить html страницу.
             var gettingHtml = new GettingHtml();
-            HtmlDocument htmlDocument = gettingHtml.GetHtmlDocumentFromWeb(bankDataRequest.RatesUrlPage);
+            HtmlDocument htmlDocument = gettingHtml.GetHtmlDocumentFromWeb(request.RatesUrlPage);
 
             // Прервать выполнение программы, если возникла ошибка при загрузке страницы.
             if (htmlDocument == null)
                 return null;
 
             // Хранилище данных валюты.
-            var bankRatesData = new BankRatesDataModel();
-           
-            bankRatesData.BankCountry.BankName = bankDataRequest.BankCountry.BankName;
+            var currencyDataList = new List<CurrencyDataModel>();
 
             // Выполнить сценарий парсинга. Работаем пока с одной валютой.
-            // Получить данные одной валюты банка.
-            CurrencyDataModel currencyData = GetCurrencyData(htmlDocument, bankDataRequest);
+            // TODO: реализовать получение списка обменных курсов.
+            CurrencyDataModel currencyData = GetCurrencyData(htmlDocument, request);
+            currencyDataList.Add(currencyData);
 
-            var currencyDatas = new List<CurrencyDataModel>
-            {
-                currencyData
-            };
-            bankRatesData.CurrencyDatas = currencyDatas;
-
-            return bankRatesData;
+            return currencyDataList;
         }
 
         /// <summary>
@@ -73,35 +58,40 @@ namespace RatesParsingConsole
         /// <param name="html">Страница для поиска валюты.</param>
         /// <param name="pathes">Адреса XPath.</param>
         /// <returns></returns>
-        private CurrencyDataModel GetCurrencyData(HtmlDocument html, BankDataRequestDto requestDto)
+        private CurrencyDataModel GetCurrencyData(HtmlDocument html, BankDataRequestDto request)
         {
             // Установить адреса XPath.
-            CurrencyXPathesDto pathes = requestDto.XPathes;
+            CurrencyXPathesDto pathes = request.XPathes;
 
             // Получить текстовую часть данных валюты (наименование).
             var currencyData = new CurrencyDataModel()
             {
-                ShortName = GetValueByXPath(html, pathes.ShortName),
+                CurrencyName = GetValueByXPath(html, pathes.ShortName),
                 FullName = GetValueByXPath(html, pathes.FullName),
             };
 
             // Получить численную часть данных валюты.
             // Установить разделитель разрядов и дроби.
-            var formatInfo = new NumberFormatInfo
+            var formatInfo = new NumberFormatInfo()
             {
-                NumberDecimalSeparator = requestDto.NumberDecimalSeparator,
-                NumberGroupSeparator = requestDto.NumberGroupSeparator
+                NumberDecimalSeparator = request.NumberDecimalSeparator,
+                NumberGroupSeparator = request.NumberGroupSeparator
             };
+            // TODO: Костыль. Нормально реализовать обработку ошибки получения данных / конвертации.
+            try
+            {
+                // Получить числовые значения в виде строки.
+                string exchangeRate = GetValueByXPath(html, pathes.ExchangeRate);
+                string unit = GetValueByXPath(html, pathes.Unit);
 
-            // Получить числовые значения в виде строки.
-            string exchangeRate = GetValueByXPath(html, pathes.ExchangeRate);
-            string unit = GetValueByXPath(html, pathes.Unit);
-
-            // Конвертировать строку в числа. 
-            // ДОБАВИТЬ ОБРАБОТКУ ОШИБОК КОНВЕРТАЦИИ.
-            currencyData.ExchangeRate = decimal.Parse(exchangeRate, formatInfo);
-            // currencyData.Unit = int.Parse(unit, formatInfo);
-
+                // Конвертировать строку в числа.
+                currencyData.ExchangeRate = decimal.Parse(exchangeRate, formatInfo);
+                // currencyData.Unit = int.Parse(unit, formatInfo);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Ошибка при получении данных валюты: {e}\n");
+            }
             return currencyData;
         }
 
@@ -125,16 +115,23 @@ namespace RatesParsingConsole
             }
             catch (System.Xml.XPath.XPathException)
             {
-                Console.WriteLine("Ошибка при обработке XPath адреса");
+                Console.WriteLine($"Ошибка при обработке XPath адреса {xpath}");
+                resultNode = null;
+            }
+            catch (ArgumentNullException)
+            {
+                Console.WriteLine($"XPath адрес отсутствует (NULL)");
                 resultNode = null;
             }
 
             if (resultNode != null)
+            {
                 result = resultNode.InnerText;
+                // Привести форматирование текста к приемлемому виду.
+                result = GetClearText(result);
+            }
             else
-                result = "ERROR";
-            // Привести форматирование текста к приемлемому виду.
-            result = GetClearText(result);
+                result = null;
             return result;
         }
 
