@@ -12,12 +12,7 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Сокращенное название валюты.
         /// </summary>
-        public string CurrencyName { get; set; }
-
-        /// <summary>
-        /// Полное название валюты.
-        /// </summary>
-        public string FullName { get; set; }
+        public string TextCode { get; set; }
 
         /// <summary>
         /// Единица измерения валюты.
@@ -28,5 +23,15 @@ namespace RatesParsingConsole.Models
         /// Обменный курс валюты.
         /// </summary>
         public decimal ExchangeRate { get; set; }
+
+        /// <summary>
+        /// Успешно ли получены значения валюты.
+        /// </summary>
+        public bool IsSuccessfullyParsed { get; set; }
+
+        /// <summary>
+        /// Описание ошибки при неудачном получении данных валюты.
+        /// </summary>
+        public string ErrorName { get; set; }
     }
 }

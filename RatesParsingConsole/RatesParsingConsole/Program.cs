@@ -56,14 +56,27 @@ namespace RatesParsingConsole
             // TODO: реализовать работу с данными JSON.
             bank1.BankDataRequest.XPathes = new CurrencyXPathesDto()
             {
-                ShortName = @"//*[@id='currency_id']/table/tr[1]/td[1]",
-                FullName = @"//*[@id='currency_id']/table/tr[1]/td[2]",
-                Unit = "доработать",
+                TextCode = @"//*[@id='currency_id']/table/tr[1]/td[1]",
+                Unit = @"//*[@id='currency_id']/table/tr[1]/td[2]",
                 ExchangeRate = @"//*[@id='currency_id']/table/tr[1]/td[3]"
             };
+            // Получить число (единицу измерения валюты) из текстовой строки.
+            bank1.BankDataRequest.GetConvertedUnit = delegate (string text)
+            {
+                string digitText = "";
+
+                foreach (char ch in text)
+                {
+                    if (char.IsDigit(ch))
+                        digitText += ch;
+                }
+
+                return digitText;
+            };
+
             // Добавить банк в список.
             bankDataModels.Add(bank1);
-
+            
             var bank2 = new BankDataModel();
             bank2.BankRates.BankName = "National Bank of Poland";
             bank2.BankRates.BankCurrency = "PLN";
@@ -82,16 +95,23 @@ namespace RatesParsingConsole
         /// <param name="banks"></param>
         static void ShowResults(IEnumerable<BankRatesDataModel> banks)
         {
+            Console.WriteLine("\nКурсы валют по банкам:\n");
             foreach (var bank in banks)
             {
-                Console.WriteLine($"Название банка: {bank.BankName}.");
+                Console.WriteLine($"Курсы валют банка \"{bank.BankName}\", " +
+                    $"национальная валюта {bank.BankCurrency}:");
                 Console.WriteLine();
                 foreach (var currency in bank.ExchangeRates)
                 {
-                    Console.WriteLine($"Краткое наименование валюты: {currency.CurrencyName}.");
-                    Console.WriteLine($"Полное наименование валюты: {currency.FullName}.");
-                    Console.WriteLine($"Обменный курс: {currency.ExchangeRate}.");
-                    Console.WriteLine();
+                    if (currency.IsSuccessfullyParsed)
+                    {
+                        Console.WriteLine($"Краткое наименование валюты: {currency.TextCode}.");
+                        Console.WriteLine($"Единица измерения валюты: {currency.Unit}.");
+                        Console.WriteLine($"Обменный курс: {currency.ExchangeRate}.");
+                        Console.WriteLine();
+                    }
+                    else
+                        Console.WriteLine($"Ошибка при получении данных валюты: {currency.ErrorName}.");
                 }
                 Console.WriteLine();
             }

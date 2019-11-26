@@ -1,0 +1,95 @@
+[
+	{
+		"commandName": "HttpGet",
+		"parameters": {
+			"ResultNameKey": "HttpGetContent"
+		}
+	},
+	{
+		"commandName": "GetByXPath",
+		"parameters": {
+			"InputNameKey": "HttpGetContent",
+			"SearchFilter": "/tabela_kursow/data_publikacji",
+			"ResultNameKey": "RateDateString"
+		}
+	},
+	{
+		"commandName": "DateFormat",
+		"parameters": {
+			"InputNameKey": "RateDateString",
+			"InFormat": "yyyy-MM-dd",
+			"ResultNameKey": "LocalDate"
+		}
+	},
+	{
+		"commandName": "GetByXPath",
+		"parameters": {
+			"InputNameKey": "HttpGetContent",
+			"SearchFilter": "/tabela_kursow/pozycja/przelicznik",
+			"ResultNameKey": "BaseUnit"
+		}
+	},
+	{
+		"commandName": "GetByXPath",
+		"parameters": {
+			"InputNameKey": "HttpGetContent",
+			"SearchFilter": "/tabela_kursow/pozycja/kod_waluty",
+			"ResultNameKey": "BaseCurrency"
+		}
+	},
+	{
+		"commandName": "GetByXPath",
+		"parameters": {
+			"InputNameKey": "HttpGetContent",
+			"SearchFilter": "/tabela_kursow/pozycja/kurs_sredni",
+			"ResultNameKey": "Rates"
+		}
+	},
+	{
+		"commandName": "Replace",
+		"parameters": {
+			"InputNameKey": "Rates",
+			"OldValue": ",",
+			"NewValue": ".",
+			"Type": "String",
+			"ResultNameKey": "Rate"
+		}
+	},
+	{
+		"commandName": "Duplicate",
+		"parameters": {
+			"InputNameKey": "BIC",
+			"CountStandardKeyName": "Rate",
+			"ResultNameKey": "BIC"
+		}
+	},
+	{
+		"commandName": "Duplicate",
+		"parameters": {
+			"InputNameKey": "QuoteCurrency",
+			"CountStandardKeyName": "Rate",
+			"ResultNameKey": "QuoteCurrency"
+		}
+	},
+	{
+		"commandName": "Duplicate",
+		"parameters": {
+			"InputNameKey": "LocalDate",
+			"CountStandardKeyName": "Rate",
+			"ResultNameKey": "LocalDate"
+		}
+	},
+	{
+		"commandName": "SetResponse",
+		"parameters": {
+			"InputNameKeys": [
+				"BIC",
+				"BaseCurrency",
+				"QuoteCurrency",
+				"LocalDate",
+				"BaseUnit",
+				"Rate"
+			]
+		}
+	}
+]

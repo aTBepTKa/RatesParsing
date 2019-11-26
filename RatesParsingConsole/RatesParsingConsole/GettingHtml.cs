@@ -60,7 +60,7 @@ namespace RatesParsingConsole
                 return null;
             }
 
-            Console.WriteLine($"Страница {URL} успешно загружена.\n");
+            Console.WriteLine($"Страница {URL} успешно загружена.");
             return document;
         }
     }

@@ -39,7 +39,7 @@ namespace RatesParsingConsole
 
             // Прервать выполнение программы, если возникла ошибка при загрузке страницы.
             if (htmlDocument == null)
-                return null;
+                return Array.Empty<CurrencyDataModel>();
 
             // Хранилище данных валюты.
             var currencyDataList = new List<CurrencyDataModel>();
@@ -63,13 +63,6 @@ namespace RatesParsingConsole
             // Установить адреса XPath.
             CurrencyXPathesDto pathes = request.XPathes;
 
-            // Получить текстовую часть данных валюты (наименование).
-            var currencyData = new CurrencyDataModel()
-            {
-                CurrencyName = GetValueByXPath(html, pathes.ShortName),
-                FullName = GetValueByXPath(html, pathes.FullName),
-            };
-
             // Получить численную часть данных валюты.
             // Установить разделитель разрядов и дроби.
             var formatInfo = new NumberFormatInfo()
@@ -77,20 +70,33 @@ namespace RatesParsingConsole
                 NumberDecimalSeparator = request.NumberDecimalSeparator,
                 NumberGroupSeparator = request.NumberGroupSeparator
             };
-            // TODO: Костыль. Нормально реализовать обработку ошибки получения данных / конвертации.
+
+            // Получить данные валюты через XPath.
+            var currencyData = new CurrencyDataModel();
+
+            
+
+            // Получить значения данных для валюты со страницы.
             try
             {
+                currencyData.TextCode = GetValueByXPath(html, pathes.TextCode);
+                
                 // Получить числовые значения в виде строки.
                 string exchangeRate = GetValueByXPath(html, pathes.ExchangeRate);
                 string unit = GetValueByXPath(html, pathes.Unit);
 
-                // Конвертировать строку в числа.
+                // Отделить числовую часть строки от текстовой.
+                unit = request.GetConvertedUnit(unit);
+
+                // Конвертировать строку в числовые значения.
                 currencyData.ExchangeRate = decimal.Parse(exchangeRate, formatInfo);
-                // currencyData.Unit = int.Parse(unit, formatInfo);
+                currencyData.Unit = int.Parse(unit, formatInfo);
+                currencyData.IsSuccessfullyParsed = true;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Ошибка при получении данных валюты: {e}\n");
+                currencyData.IsSuccessfullyParsed = false;
+                currencyData.ErrorName = e.Message;
             }
             return currencyData;
         }
@@ -115,13 +121,11 @@ namespace RatesParsingConsole
             }
             catch (System.Xml.XPath.XPathException)
             {
-                Console.WriteLine($"Ошибка при обработке XPath адреса {xpath}");
-                resultNode = null;
+                throw new Exception($"Ошибка при обработке XPath адреса {xpath}. ");
             }
             catch (ArgumentNullException)
             {
-                Console.WriteLine($"XPath адрес отсутствует (NULL)");
-                resultNode = null;
+                throw new Exception("Отсутствует XPath адрес");
             }
 
             if (resultNode != null)
@@ -131,7 +135,7 @@ namespace RatesParsingConsole
                 result = GetClearText(result);
             }
             else
-                result = null;
+                throw new Exception("При поиске по адресу XPath получено значение Null");
             return result;
         }
 
