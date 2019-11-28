@@ -31,12 +31,42 @@ namespace RatesParsingConsole.Models
         public string NumberGroupSeparator { get; set; }
 
         /// <summary>
-        /// Конвертирует значение единицы измерения валюты в значение, пригодное для парсинга в int.
+        /// Переменная часть адреса XPath.
+        /// </summary>
+        public string VariablePartOfXpath { get; set; }
+
+        /// <summary>
+        /// Начальная строка для считывания.
+        /// </summary>
+        public int StartRow { get; set; }
+
+        /// <summary>
+        /// Количество строк для считывания.
+        /// </summary>
+        public int RowsNum { get; set; }
+
+        /// <summary>
+        /// Получить подстроку с необходимыми данными.
         /// </summary>
         /// <param name="text">Строка для конвертации.</param>
-        /// <returns>Строка, пригодная для парсинга в int.</returns>
-        public delegate string ConvertedUnitHandler(string text);
+        /// <returns></returns>
+        public delegate string GetSubString(string text);
 
-        public ConvertedUnitHandler GetConvertedUnit { get; set; }
+        /// <summary>
+        /// Получить строку единицы измерения валюты в формате для парсинга.
+        /// </summary>
+        public GetSubString GetUnitSubString { get; set; } = delegate (string text)
+        {
+            return text;
+        };
+
+        /// <summary>
+        /// Получить текстовый код валюты.
+        /// </summary>
+        public GetSubString GetTextCodeSubString { get; set; } = delegate (string text)
+        {
+            return text;
+        };
+
     }
 }
