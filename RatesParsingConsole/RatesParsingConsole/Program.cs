@@ -5,15 +5,13 @@ using RatesParsingConsole.Models;
 
 namespace RatesParsingConsole
 {
-    class Program
+    internal class Program
     {
-        //Устранены не все замечания. Пересмотреть еще раз.
-
         /// <summary>
         /// Получает курсы обмена валют с различных банков и выводит в консоль.
         /// </summary>
         /// <param name="args"></param>
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             // Формируем список банков с запросами.
             var bankDataModelList = new List<BankDataModel>();
@@ -37,7 +35,7 @@ namespace RatesParsingConsole
         /// Сформировать список банков с данными запроса.
         /// </summary>
         /// <returns></returns>
-        static IEnumerable<BankDataModel> GetBankData()
+        private static IEnumerable<BankDataModel> GetBankData()
         {
             // TODO: реализовать работу с данными JSON.
 
@@ -152,11 +150,11 @@ namespace RatesParsingConsole
         /// Выводит полученные результаты в консоль.
         /// </summary>
         /// <param name="ExchangeRates"></param>
-        static void ShowExchangeRates(IEnumerable<BankDataModel> bankDataModelList)
+        private static void ShowExchangeRates(IEnumerable<BankDataModel> bankDataModelList)
         {
             foreach (var bank in bankDataModelList)
             {
-                Console.WriteLine($"\nКурсы валют банка \"{bank.BankRates.BankName}\", " +
+                Console.WriteLine($"{Environment.NewLine}Курсы валют банка \"{bank.BankRates.BankName}\", " +
                     $"национальная валюта {bank.BankRates.BankCurrency}:");
                 Console.WriteLine();
                 foreach (var Rate in bank.BankRates.ExchangeRates)
@@ -171,37 +169,57 @@ namespace RatesParsingConsole
                     else
                         Console.WriteLine($"Ошибка при получении данных валюты: {Rate.ErrorName}.");
                 }
-                Console.WriteLine("\n");
-            }           
+                Console.WriteLine();
+            }
         }
 
         /// <summary>
         /// Записать полученные данные в файл.
         /// </summary>
         /// <param name="bankData"></param>
-        static void WriteToFile(IEnumerable<BankDataModel> bankDataModelList)
+        private static async void WriteToFile(IEnumerable<BankDataModel> bankDataModelList)
         {
-            using (StreamWriter sw = new StreamWriter("ExchangeRates.txt"))
+            // Задать объект потока для записи и задать имя файла.
+            FileStream stream = null;
+            var fileName = "ExchangeRates.txt";
+
+            try
             {
-                foreach (var bank in bankDataModelList)
+                // Создать поток.
+                stream = new FileStream(fileName, FileMode.OpenOrCreate);
+                // Записать данные в файл.
+                using (StreamWriter sw = new StreamWriter(stream, System.Text.Encoding.UTF8))
                 {
-                    sw.WriteLine($"\nКурсы валют банка \"{bank.BankRates.BankName}\", " +
-                        $"национальная валюта {bank.BankRates.BankCurrency}:");
-                    sw.WriteLine();
-                    foreach (var Rate in bank.BankRates.ExchangeRates)
+                    foreach (var bank in bankDataModelList)
                     {
-                        if (Rate.IsSuccessfullyParsed)
+                        await sw.WriteLineAsync($"Курсы валют банка \"{bank.BankRates.BankName}\", " +
+                            $"национальная валюта {bank.BankRates.BankCurrency}:");
+                        await sw.WriteLineAsync();
+                        foreach (var Rate in bank.BankRates.ExchangeRates)
                         {
-                            sw.WriteLine($"Код валюты: {Rate.TextCode}");
-                            sw.WriteLine($"Единица: {Rate.Unit}");
-                            sw.WriteLine($"Обменный курс: {Rate.ExchangeRate}");
-                            sw.WriteLine();
+                            if (Rate.IsSuccessfullyParsed)
+                            {
+                                await sw.WriteLineAsync($"Код валюты: {Rate.TextCode}");
+                                await sw.WriteLineAsync($"Единица: {Rate.Unit}");
+                                await sw.WriteLineAsync($"Обменный курс: {Rate.ExchangeRate}");
+                                await sw.WriteLineAsync();
+                            }
+                            else
+                                await sw.WriteLineAsync($"Ошибка при получении данных валюты: {Rate.ErrorName}.");
                         }
-                        else
-                            sw.WriteLine($"Ошибка при получении данных валюты: {Rate.ErrorName}.");
+                        await sw.WriteLineAsync();
                     }
-                    sw.WriteLine("\n");
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при записи в файл: {ex.Message}");
+            }
+            finally
+            {
+                // Освободить ресурсы потока.
+                if (stream != null)
+                    stream.Dispose();
             }
         }
     }

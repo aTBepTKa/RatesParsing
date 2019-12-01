@@ -23,11 +23,11 @@ namespace RatesParsingConsole
             }
             catch(FormatException e)
             {
-                Console.WriteLine($"Ошибка при открытии файла \"...\\{FileName}\":\n" +
+                Console.WriteLine($"Ошибка при открытии файла \"...\\{FileName}\":{Environment.NewLine}" +
                     $"{e.GetType().Name}");
                 return null;
             }
-            Console.WriteLine($"Файл \"...\\{FileName}\" успешно открыт.\n");
+            Console.WriteLine($"Файл \"...\\{FileName}\" успешно открыт.{Environment.NewLine}");
             return document;
         }
 
@@ -46,17 +46,17 @@ namespace RatesParsingConsole
             }
             catch (UriFormatException)
             {
-                Console.WriteLine($"Не верный формат URL ({URL}).\n");
+                Console.WriteLine($"Не верный формат URL ({URL}).{Environment.NewLine}");
                 return null;
             }
             catch (System.Net.WebException)
             {
-                Console.WriteLine($"Запрашиваемая страница не найдена ({URL}).\n");
+                Console.WriteLine($"Запрашиваемая страница не найдена ({URL}).{Environment.NewLine}");
                 return null;
             }
             catch (ArgumentNullException)
             {
-                Console.WriteLine($"Запрашиваемая страница не задана.\n");
+                Console.WriteLine($"Запрашиваемая страница не задана.{Environment.NewLine}");
                 return null;
             }
 

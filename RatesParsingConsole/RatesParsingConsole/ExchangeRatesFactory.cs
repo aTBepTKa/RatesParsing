@@ -83,7 +83,7 @@ namespace RatesParsingConsole
                 unit = request.GetUnitSubString(unit);
                 textCode = request.GetTextCodeSubString(textCode);
 
-                // 
+                // Уточнить значения (выдрать подстроку).
                 currencyData.TextCode = textCode;
                 currencyData.ExchangeRate = decimal.Parse(exchangeRate, formatInfo);
                 currencyData.Unit = int.Parse(unit, formatInfo);
