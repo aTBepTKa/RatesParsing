@@ -7,7 +7,7 @@ namespace RatesParsingConsole.Models
     /// <summary>
     /// Данные курсов валют банка.
     /// </summary>
-    class BankRatesDataModel
+    class BankRatesModel
     {
         /// <summary>
         /// Название банка.
@@ -23,5 +23,15 @@ namespace RatesParsingConsole.Models
         /// Курсы валют банка.
         /// </summary>
         public IEnumerable<CurrencyDataModel> ExchangeRates { get; set; }
+
+        /// <summary>
+        /// Успешно ли получены значения валюты.
+        /// </summary>
+        public bool IsSuccessfullyParsed { get; set; }
+
+        /// <summary>
+        /// Описание ошибки при неудачном получении данных валюты.
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 }

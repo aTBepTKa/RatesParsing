@@ -8,8 +8,19 @@ namespace RatesParsingConsole.Models
     /// <summary>
     /// Данные для запроса к банку.
     /// </summary>
-    class BankDataRequestDto
+    class BankRequestDto
     {
+
+        /// <summary>
+        /// Наименование банка.
+        /// </summary>
+        public string BankName { get; set; }
+
+        /// <summary>
+        /// Текстовый код основной валюты банка.
+        /// </summary>
+        public string BankCurrency { get; set; }
+
         /// <summary>
         /// Ссылка на страницу с курсами.
         /// </summary>
@@ -21,12 +32,12 @@ namespace RatesParsingConsole.Models
         public CurrencyXPathesDto XPathes { get; set; }
 
         /// <summary>
-        /// Разделитель целой и дробной части.
+        /// Разделитель десятичной части числа.
         /// </summary>
         public string NumberDecimalSeparator { get; set; }
 
         /// <summary>
-        /// Разделитель десятичной части числа.
+        /// Разделитель групп разрядов числа.
         /// </summary>
         public string NumberGroupSeparator { get; set; }
 
@@ -41,21 +52,21 @@ namespace RatesParsingConsole.Models
         public int StartRow { get; set; }
 
         /// <summary>
-        /// Количество строк для считывания.
+        /// Последняя строка для считывания.
         /// </summary>
-        public int RowsNum { get; set; }
+        public int EndRow { get; set; }
 
         /// <summary>
         /// Получить подстроку с необходимыми данными.
         /// </summary>
         /// <param name="text">Строка для конвертации.</param>
         /// <returns></returns>
-        public delegate string GetSubString(string text);
+        public delegate string GetSubStringHandler(string text);
 
         /// <summary>
         /// Получить строку единицы измерения валюты в формате для парсинга.
         /// </summary>
-        public GetSubString GetUnitSubString { get; set; } = delegate (string text)
+        public GetSubStringHandler GetUnitSubString { get; set; } = delegate (string text)
         {
             return text;
         };
@@ -63,7 +74,7 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Получить текстовый код валюты.
         /// </summary>
-        public GetSubString GetTextCodeSubString { get; set; } = delegate (string text)
+        public GetSubStringHandler GetTextCodeSubString { get; set; } = delegate (string text)
         {
             return text;
         };

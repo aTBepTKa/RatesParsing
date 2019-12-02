@@ -1,73 +1,122 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RatesParsingConsole.Models;
 
 namespace RatesParsingConsole
 {
-    internal class Program
+    class Program
     {
         /// <summary>
-        /// Получает курсы обмена валют с различных банков и выводит в консоль.
+        /// Получает курсы обмена валют с различных банков.
         /// </summary>
         /// <param name="args"></param>
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
-            // Формируем список банков с запросами.
-            var bankDataModelList = new List<BankDataModel>();
-            bankDataModelList.AddRange(GetBankData());
+            // Формируем список запросов к бакнкам.
+            var requests = new List<BankRequestDto>(GetBankData());
 
-            // Инструмент для получения результатов парсинга страниц.
-            var ratesFactory = new ExchangeRatesFactory();
-
-            // Получить курсы валют.
-            foreach (var bank in bankDataModelList)
-                bank.BankRates.ExchangeRates = ratesFactory.GetBankRatesDatas(bank.BankDataRequest);
+            // Получить данные курсов по банкам асинхронно.
+            IEnumerable<BankRatesModel> banks = GetBankRatesAsync(requests);
 
             // Вывести полученные значения.
-            ShowExchangeRates(bankDataModelList);
-            WriteToFile(bankDataModelList);
+            ShowExchangeRates(banks);
+            WriteToFile(banks);
 
             Console.ReadKey();
+        }
+
+        // Попытка запустить парсинг сайтов асинхронно. Не понятно работает ли.
+        /// <summary>
+        /// Получить данные банков с обменными курсами асинхронно.
+        /// </summary>
+        /// <param name="requests">Список запросов.</param>
+        /// <returns></returns>
+        private static IEnumerable<BankRatesModel> GetBankRatesAsync(IEnumerable<BankRequestDto> requests)
+        {
+            // Время приостановки потока (мс) для проверки работы асинхронности.
+            int[] sleep = new int[] { 2000, 1000, 3000 };
+            int i = 0;
+
+            // Инструмент для обработки запроса и получения данных страниц банков.
+            var factory = new ExchangeRatesFactory();
+
+            // Список задач.
+            var tasks = new List<Task<BankRatesModel>>();
+
+            // Получить данные обменных курсов по каждому банку асинхронно. 
+            // (запустить парсинг каждого сайта параллельно)
+            foreach (var req in requests)
+                tasks.Add(factory.GetCurrencyDatasAsync(req, sleep[i++]));
+
+            // Для проверки асинхронности. Удалить.
+            Thread.Sleep(2000);
+            
+            // Подождать завершения всех задач и получить спиок банков с курсами.
+            var banks = Task.WhenAll(tasks).Result;
+
+            return banks;
+        }
+
+        /// <summary>
+        /// Получить данные банков с обменными курсами.
+        /// </summary>
+        /// <param name="requests">Список запросов.</param>
+        /// <returns></returns>
+        private static IEnumerable<BankRatesModel> GetBankRates(IEnumerable<BankRequestDto> requsts)
+        {
+            // Список банков.
+            List<BankRatesModel> banks = new List<BankRatesModel>();
+            // Инструмент для обработки запроса и получения данных страниц банков.
+            var factory = new ExchangeRatesFactory();
+            // Получить данные банка по каждому запросу.
+            foreach (var req in requsts)
+                banks.Add(factory.GetCurrencyDatas(req));
+            return banks;
         }
 
         /// <summary>
         /// Сформировать список банков с данными запроса.
         /// </summary>
         /// <returns></returns>
-        private static IEnumerable<BankDataModel> GetBankData()
+        private static IEnumerable<BankRequestDto> GetBankData()
         {
             // TODO: реализовать работу с данными JSON.
 
             // Список банков.
-            var bankDataModels = new List<BankDataModel>();
+            var bankDataModels = new List<BankRequestDto>();
 
             // Установить данные для банков.
+            // Переменная часть пути XPath для всех банков.
+            var VariablePartOfXpath = "$VARIABLE";
 
             // Данные для Банка 1.
-            // TODO: Разработать БД с информацией по банкам и соответствующими запросами.
-            var bank1 = new BankDataModel();
-            bank1.BankRates.BankName = "National Bank of Georgia";
-            bank1.BankRates.BankCurrency = "GEL";
-            bank1.BankDataRequest.RatesUrlPage = "https://www.nbg.gov.ge/index.php?m=582&lng=eng";
-            bank1.BankDataRequest.NumberDecimalSeparator = ".";
-            bank1.BankDataRequest.NumberGroupSeparator = ",";
-            // XPath пути для валюты.
             // Данные для реализации цикла перебора строк с курсами валют.
             var StartRow1 = 1;
-            var RowsNum1 = 43;
-            bank1.BankDataRequest.StartRow = StartRow1;
-            bank1.BankDataRequest.RowsNum = RowsNum1;
-            bank1.BankDataRequest.VariablePartOfXpath = "$VARIABLE";
+            var EndRow1 = 43;
+            var bank1 = new BankRequestDto
+            {
+                BankName = "National Bank of Georgia",
+                BankCurrency = "GEL",
+                RatesUrlPage = "https://www.nbg.gov.ge/index.php?m=582&lng=eng",
+                NumberDecimalSeparator = ".",
+                NumberGroupSeparator = ",",
+                StartRow = StartRow1,
+                EndRow = EndRow1,
+                VariablePartOfXpath = VariablePartOfXpath
+            };
+            // XPath пути для валюты.            
             // Шаблон пути.
-            bank1.BankDataRequest.XPathes = new CurrencyXPathesDto()
+            bank1.XPathes = new CurrencyXPathesDto()
             {
                 TextCode = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[1]",
                 Unit = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[2]",
                 ExchangeRate = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
             };
             // Получить число (единицу измерения валюты) из строки с текстом.
-            bank1.BankDataRequest.GetUnitSubString = delegate (string text)
+            bank1.GetUnitSubString = delegate (string text)
             {
                 string digitText = "";
 
@@ -84,25 +133,27 @@ namespace RatesParsingConsole
 
 
             // Данные для Банка 2.
-            var bank2 = new BankDataModel();
-            bank2.BankRates.BankName = "National Bank of Poland";
-            bank2.BankRates.BankCurrency = "PLN";
-            bank2.BankDataRequest.RatesUrlPage = "https://www.nbp.pl/homen.aspx?f=/kursy/RatesA.html";
-            bank2.BankDataRequest.NumberDecimalSeparator = ".";
-            bank2.BankDataRequest.NumberGroupSeparator = ",";
             var StartRow2 = 2;
-            var RowsNum2 = 36;
-            bank2.BankDataRequest.StartRow = StartRow2;
-            bank2.BankDataRequest.RowsNum = RowsNum2;
-            bank2.BankDataRequest.VariablePartOfXpath = "$VARIABLE";
-            bank2.BankDataRequest.XPathes = new CurrencyXPathesDto()
+            var EndRow2 = 36;
+            var bank2 = new BankRequestDto
+            {
+                BankName = "National Bank of Poland",
+                BankCurrency = "PLN",
+                RatesUrlPage = "https://www.nbp.pl/homen.aspx?f=/kursy/RatesA.html",
+                NumberDecimalSeparator = ".",
+                NumberGroupSeparator = ",",
+                StartRow = StartRow2,
+                EndRow = EndRow2,
+                VariablePartOfXpath = VariablePartOfXpath
+            };
+            bank2.XPathes = new CurrencyXPathesDto()
             {
                 TextCode = @"//*[@id=""article""]/table/tr/td/center/table[1]/tr[$VARIABLE]/td[2]",
                 Unit = @"//*[@id=""article""]/table/tr/td/center/table[1]/tr[$VARIABLE]/td[2]",
                 ExchangeRate = @"//*[@id=""article""]/table/tr/td/center/table[1]/tr[$VARIABLE]/td[3]"
             };
             // Сформировать число из найденных в строке цифр.
-            bank2.BankDataRequest.GetUnitSubString = delegate (string text)
+            bank2.GetUnitSubString = delegate (string text)
             {
                 string digitText = "";
 
@@ -111,31 +162,33 @@ namespace RatesParsingConsole
                     if (char.IsDigit(ch))
                         digitText += ch;
                 }
-
                 return digitText;
             };
             // Сформировать текстовый код валюты получив последние три символа строки.
-            bank2.BankDataRequest.GetTextCodeSubString = delegate (string text)
+            bank2.GetTextCodeSubString = delegate (string text)
             {
                 var CodeLength = 3;
                 var NewString = text.Substring(text.Length - CodeLength);
                 return NewString;
             };
             bankDataModels.Add(bank2);
+            
 
-            // Банк 3.
-            var bank3 = new BankDataModel();
-            bank3.BankRates.BankName = "The Central Bank of the Russian Federation";
-            bank3.BankRates.BankCurrency = "RUB";
-            bank3.BankDataRequest.RatesUrlPage = "https://www.cbr.ru/eng/currency_base/daily/";
-            bank3.BankDataRequest.NumberDecimalSeparator = ".";
-            bank3.BankDataRequest.NumberGroupSeparator = ",";
+            // Данные для банка 3.
             var StartRow3 = 2;
-            var RowsNum3 = 35;
-            bank3.BankDataRequest.StartRow = StartRow3;
-            bank3.BankDataRequest.RowsNum = RowsNum3;
-            bank3.BankDataRequest.VariablePartOfXpath = "$VARIABLE";
-            bank3.BankDataRequest.XPathes = new CurrencyXPathesDto()
+            var EndRow3 = 35;
+            var bank3 = new BankRequestDto
+            {
+                BankName = "The Central Bank of the Russian Federation",
+                BankCurrency = "RUB",
+                RatesUrlPage = "https://www.cbr.ru/eng/currency_base/daily/",
+                NumberDecimalSeparator = ".",
+                NumberGroupSeparator = ",",
+                StartRow = StartRow3,
+                EndRow = EndRow3,
+                VariablePartOfXpath = VariablePartOfXpath
+            };
+            bank3.XPathes = new CurrencyXPathesDto()
             {
                 TextCode = @"//*[@id=""content""]/table/tbody/tr[$VARIABLE]/td[2]",
                 Unit = @"//*[@id=""content""]/table/tbody/tr[$VARIABLE]/td[3]",
@@ -150,14 +203,14 @@ namespace RatesParsingConsole
         /// Выводит полученные результаты в консоль.
         /// </summary>
         /// <param name="ExchangeRates"></param>
-        private static void ShowExchangeRates(IEnumerable<BankDataModel> bankDataModelList)
+        private static void ShowExchangeRates(IEnumerable<BankRatesModel> banks)
         {
-            foreach (var bank in bankDataModelList)
+            foreach (var bank in banks)
             {
-                Console.WriteLine($"{Environment.NewLine}Курсы валют банка \"{bank.BankRates.BankName}\", " +
-                    $"национальная валюта {bank.BankRates.BankCurrency}:");
+                Console.WriteLine($"{Environment.NewLine}Курсы валют банка \"{bank.BankName}\", " +
+                    $"национальная валюта {bank.BankCurrency}:");
                 Console.WriteLine();
-                foreach (var Rate in bank.BankRates.ExchangeRates)
+                foreach (var Rate in bank.ExchangeRates)
                 {
                     if (Rate.IsSuccessfullyParsed)
                     {
@@ -167,7 +220,7 @@ namespace RatesParsingConsole
                         Console.WriteLine();
                     }
                     else
-                        Console.WriteLine($"Ошибка при получении данных валюты: {Rate.ErrorName}.");
+                        Console.WriteLine($"Ошибка при получении данных валюты: {Rate.ErrorMessage}.");
                 }
                 Console.WriteLine();
             }
@@ -177,7 +230,7 @@ namespace RatesParsingConsole
         /// Записать полученные данные в файл.
         /// </summary>
         /// <param name="bankData"></param>
-        private static async void WriteToFile(IEnumerable<BankDataModel> bankDataModelList)
+        private static async void WriteToFile(IEnumerable<BankRatesModel> banks)
         {
             // Задать объект потока для записи и задать имя файла.
             FileStream stream = null;
@@ -190,12 +243,12 @@ namespace RatesParsingConsole
                 // Записать данные в файл.
                 using (StreamWriter sw = new StreamWriter(stream, System.Text.Encoding.UTF8))
                 {
-                    foreach (var bank in bankDataModelList)
+                    foreach (var bank in banks)
                     {
-                        await sw.WriteLineAsync($"Курсы валют банка \"{bank.BankRates.BankName}\", " +
-                            $"национальная валюта {bank.BankRates.BankCurrency}:");
+                        await sw.WriteLineAsync($"Курсы валют банка \"{bank.BankName}\", " +
+                            $"национальная валюта {bank.BankCurrency}:");
                         await sw.WriteLineAsync();
-                        foreach (var Rate in bank.BankRates.ExchangeRates)
+                        foreach (var Rate in bank.ExchangeRates)
                         {
                             if (Rate.IsSuccessfullyParsed)
                             {
@@ -205,7 +258,7 @@ namespace RatesParsingConsole
                                 await sw.WriteLineAsync();
                             }
                             else
-                                await sw.WriteLineAsync($"Ошибка при получении данных валюты: {Rate.ErrorName}.");
+                                await sw.WriteLineAsync($"Ошибка при получении данных валюты: {Rate.ErrorMessage}.");
                         }
                         await sw.WriteLineAsync();
                     }

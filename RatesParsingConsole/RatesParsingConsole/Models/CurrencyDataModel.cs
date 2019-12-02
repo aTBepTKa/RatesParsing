@@ -32,6 +32,6 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Описание ошибки при неудачном получении данных валюты.
         /// </summary>
-        public string ErrorName { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }

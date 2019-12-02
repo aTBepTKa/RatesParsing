@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 
@@ -21,7 +22,7 @@ namespace RatesParsingConsole
             {
                 document.Load(FileName);
             }
-            catch(FormatException e)
+            catch (FormatException e)
             {
                 Console.WriteLine($"Ошибка при открытии файла \"...\\{FileName}\":{Environment.NewLine}" +
                     $"{e.GetType().Name}");
@@ -32,11 +33,21 @@ namespace RatesParsingConsole
         }
 
         /// <summary>
+        /// Получить html документ из интернета асинхронно.
+        /// </summary>
+        /// <param name="URL">Адрес получаемой страницы.</param>
+        /// <returns></returns>
+        public async Task<HtmlDocument> GetHtmlFromWebAsync(string URL)
+        {
+            return await Task.Run(() => GetHtmlFromWeb(URL));
+        }
+
+        /// <summary>
         /// Получить html документ из интернета.
         /// </summary>
         /// <param name="URL">Адрес получаемой страницы.</param>
         /// <returns></returns>
-        public HtmlDocument GetHtmlDocumentFromWeb(string URL)
+        public HtmlDocument GetHtmlFromWeb(string URL)
         {
             var web = new HtmlWeb();
             var document = new HtmlDocument();

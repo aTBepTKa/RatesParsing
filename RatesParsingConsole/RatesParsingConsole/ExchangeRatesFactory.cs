@@ -1,8 +1,10 @@
 ﻿using HtmlAgilityPack;
 using RatesParsingConsole.Models;
 using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Text;
 
 namespace RatesParsingConsole
@@ -12,31 +14,65 @@ namespace RatesParsingConsole
     /// </summary>
     class ExchangeRatesFactory
     {
+
+        /// <summary>
+        /// Получить курсы валют банка асинхронно.
+        /// </summary>
+        /// <param name="request">Данные для запроса банку.</param>
+        /// <param name="sleep">(Временно). Время приостановки потока для проверки асинхронности.</param>
+        /// <returns></returns>
+        public async Task<BankRatesModel> GetCurrencyDatasAsync(BankRequestDto request, int sleep = 0)
+        {
+            Thread.Sleep(sleep);
+            var result = await Task.Run(() => GetCurrencyDatas(request));
+            return result;
+        }
+
         /// <summary>
         /// Получить курсы валют банка.
         /// </summary>
         /// <param name="request">Данные для запроса банку.</param>
         /// <returns></returns>
-        public IEnumerable<CurrencyDataModel> GetBankRatesDatas(BankDataRequestDto request)
+        public BankRatesModel GetCurrencyDatas(BankRequestDto request)
         {
+            // Результат запроса к банку.
+            var bankRatesModel = new BankRatesModel
+            {
+                BankName = request.BankName,
+                BankCurrency = request.BankCurrency,
+                IsSuccessfullyParsed = true
+            };
+
             // Получить html страницу.
             var gettingHtml = new GettingHtml();
-            HtmlDocument htmlDocument = gettingHtml.GetHtmlDocumentFromWeb(request.RatesUrlPage);
-
-            // Прервать выполнение, если страница не получена.
-            if (htmlDocument == null)
-                return Array.Empty<CurrencyDataModel>();
+            HtmlDocument htmlDocument = gettingHtml.GetHtmlFromWeb(request.RatesUrlPage);
 
             // Хранилище данных валюты.
-            var currencyDataList = new List<CurrencyDataModel>();
+            var currencyDataList = new List<CurrencyDataModel>(request.EndRow - request.StartRow + 1);
 
-            // Выполнить парсинг валют банка.
-            for (var i = request.StartRow; i <= request.RowsNum; i++)
+            // Выполнить парсинг валют банка по строкам.
+            if (htmlDocument != null)
             {
-                CurrencyDataModel currencyData = GetCurrencyData(htmlDocument, request, i);
-                currencyDataList.Add(currencyData);
+                for (var i = request.StartRow; i <= request.EndRow; i++)
+                {
+                    CurrencyDataModel currencyData = GetCurrencyData(htmlDocument, request, i);
+                    // Проверить успешность получения данных валюты. Тут что нибудь с енумом будет.
+                    if(!currencyData.IsSuccessfullyParsed)
+                    {
+                        bankRatesModel.IsSuccessfullyParsed = false;
+                        bankRatesModel.ErrorMessage = "Ошибка при получении данных валюты";
+                    }
+                    currencyDataList.Add(currencyData);
+                }
+                bankRatesModel.ExchangeRates = currencyDataList;
             }
-            return currencyDataList;
+            else
+            {
+                bankRatesModel.IsSuccessfullyParsed = false;
+                bankRatesModel.ErrorMessage = "Ошибка при получении html страницы.";
+                bankRatesModel.ExchangeRates = Array.Empty<CurrencyDataModel>();
+            }
+            return bankRatesModel;
         }
 
         /// <summary>
@@ -45,7 +81,7 @@ namespace RatesParsingConsole
         /// <param name="html">Страница для поиска валюты.</param>
         /// <param name="pathes">Адреса XPath.</param>
         /// <returns></returns>
-        private CurrencyDataModel GetCurrencyData(HtmlDocument html, BankDataRequestDto request, int rowNum)
+        private CurrencyDataModel GetCurrencyData(HtmlDocument html, BankRequestDto request, int rowNum)
         {
             // Данные валюты.
             var currencyData = new CurrencyDataModel();
@@ -59,13 +95,13 @@ namespace RatesParsingConsole
             catch (Exception e)
             {
                 currencyData.IsSuccessfullyParsed = false;
-                currencyData.ErrorName = $"Ошибка при получении уточненного адреса XPath: {e.Message}";
+                currencyData.ErrorMessage = $"Ошибка при получении уточненного адреса XPath: {e.Message}";
                 return currencyData;
             }
 
 
             // Установить разделитель разрядов и дроби.
-            var formatInfo = new NumberFormatInfo()
+            var formatInfo = new NumberFormatInfo
             {
                 NumberDecimalSeparator = request.NumberDecimalSeparator,
                 NumberGroupSeparator = request.NumberGroupSeparator
@@ -75,7 +111,7 @@ namespace RatesParsingConsole
             try
             {
                 // Получить значения по адресу XPath
-                string textCode = GetValueByXPath(html, pathes.TextCode);                
+                string textCode = GetValueByXPath(html, pathes.TextCode);
                 string exchangeRate = GetValueByXPath(html, pathes.ExchangeRate);
                 string unit = GetValueByXPath(html, pathes.Unit);
 
@@ -93,7 +129,7 @@ namespace RatesParsingConsole
             catch (Exception e)
             {
                 currencyData.IsSuccessfullyParsed = false;
-                currencyData.ErrorName = e.Message;
+                currencyData.ErrorMessage = e.Message;
             }
             return currencyData;
         }
@@ -104,7 +140,7 @@ namespace RatesParsingConsole
         /// <param name="html">Страница для парсинга.</param>
         /// <param name="xpath">Адрес XPath искомого значения.</param>
         /// <returns></returns>
-        private string GetValueByXPath(HtmlDocument html, string xpath)
+        private static string GetValueByXPath(HtmlDocument html, string xpath)
         {
             // Узел целевого значения.
             HtmlNode resultNode;
@@ -141,7 +177,7 @@ namespace RatesParsingConsole
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        private string GetClearText(string text)
+        private static string GetClearText(string text)
         {
             // Убрать новые строки и пробелы. С пробелами щээ подумать: необходимо их оставлять между словами.
             // Или вообще выпилить эту фишку нахуй либо в другое место, в GetParsingScript например.
@@ -158,10 +194,12 @@ namespace RatesParsingConsole
         /// <returns></returns>
         private CurrencyXPathesDto GetActualXpath(CurrencyXPathesDto xPathesDto, string OldSubString, string NewSubString)
         {
-            var NewXpathes = new CurrencyXPathesDto();
-            NewXpathes.ExchangeRate = xPathesDto.ExchangeRate.Replace(OldSubString, NewSubString);
-            NewXpathes.TextCode = xPathesDto.TextCode.Replace(OldSubString, NewSubString);
-            NewXpathes.Unit = xPathesDto.Unit.Replace(OldSubString, NewSubString);
+            var NewXpathes = new CurrencyXPathesDto
+            {
+                ExchangeRate = xPathesDto.ExchangeRate.Replace(OldSubString, NewSubString),
+                TextCode = xPathesDto.TextCode.Replace(OldSubString, NewSubString),
+                Unit = xPathesDto.Unit.Replace(OldSubString, NewSubString)
+            };
             return NewXpathes;
         }
     }
