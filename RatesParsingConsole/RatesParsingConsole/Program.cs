@@ -16,14 +16,14 @@ namespace RatesParsingConsole
         static void Main(string[] args)
         {
             // Формируем список запросов к бакнкам.
-            var requests = new List<BankRequestDto>(GetBankData());
+            var requests = new List<BankRequestDto>(GetBankRequest());
 
             // Получить данные курсов по банкам асинхронно.
             IEnumerable<BankRatesModel> banks = GetBankRatesAsync(requests);
 
             // Вывести полученные значения.
             ShowExchangeRates(banks);
-            WriteToFile(banks);
+            WriteToFileAsync(banks);
 
             Console.ReadKey();
         }
@@ -81,7 +81,7 @@ namespace RatesParsingConsole
         /// Сформировать список банков с данными запроса.
         /// </summary>
         /// <returns></returns>
-        private static IEnumerable<BankRequestDto> GetBankData()
+        private static IEnumerable<BankRequestDto> GetBankRequest()
         {
             // TODO: реализовать работу с данными JSON.
 
@@ -95,7 +95,8 @@ namespace RatesParsingConsole
             // Данные для Банка 1.
             // Данные для реализации цикла перебора строк с курсами валют.
             var StartRow1 = 1;
-            var EndRow1 = 43;
+            // Последняя строка задана на 2 больше, чтобы проверить отработку ошибок (должно быть 43).
+            var EndRow1 = 45;
             var bank1 = new BankRequestDto
             {
                 BankName = "National Bank of Georgia",
@@ -212,7 +213,7 @@ namespace RatesParsingConsole
                 Console.WriteLine();
                 foreach (var Rate in bank.ExchangeRates)
                 {
-                    if (Rate.IsSuccessfullyParsed)
+                    if (Rate.RequestResultStatus == ProcessingResultModel.ProcessingResult.Success)
                     {
                         Console.WriteLine($"Код валюты: {Rate.TextCode}");
                         Console.WriteLine($"Единица: {Rate.Unit}");
@@ -220,7 +221,7 @@ namespace RatesParsingConsole
                         Console.WriteLine();
                     }
                     else
-                        Console.WriteLine($"Ошибка при получении данных валюты: {Rate.ErrorMessage}.");
+                        Console.WriteLine($"Ошибка при получении данных валюты: {Rate.RequestResultMessage}.");
                 }
                 Console.WriteLine();
             }
@@ -230,8 +231,10 @@ namespace RatesParsingConsole
         /// Записать полученные данные в файл.
         /// </summary>
         /// <param name="bankData"></param>
-        private static async void WriteToFile(IEnumerable<BankRatesModel> banks)
+        private static async void WriteToFileAsync(IEnumerable<BankRatesModel> banks)
         {
+            // TODO: в файле затираются старые записи новыми. Если записываем данных меньше, чем было в изначальном файле,
+            // незатертые данные старого файла остаются.
             // Задать объект потока для записи и задать имя файла.
             FileStream stream = null;
             var fileName = "ExchangeRates.txt";
@@ -250,7 +253,7 @@ namespace RatesParsingConsole
                         await sw.WriteLineAsync();
                         foreach (var Rate in bank.ExchangeRates)
                         {
-                            if (Rate.IsSuccessfullyParsed)
+                            if (Rate.RequestResultStatus == ProcessingResultModel.ProcessingResult.Success)
                             {
                                 await sw.WriteLineAsync($"Код валюты: {Rate.TextCode}");
                                 await sw.WriteLineAsync($"Единица: {Rate.Unit}");
@@ -258,7 +261,7 @@ namespace RatesParsingConsole
                                 await sw.WriteLineAsync();
                             }
                             else
-                                await sw.WriteLineAsync($"Ошибка при получении данных валюты: {Rate.ErrorMessage}.");
+                                await sw.WriteLineAsync($"Ошибка при получении данных валюты: {Rate.RequestResultMessage}.");
                         }
                         await sw.WriteLineAsync();
                     }
@@ -267,12 +270,6 @@ namespace RatesParsingConsole
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при записи в файл: {ex.Message}");
-            }
-            finally
-            {
-                // Освободить ресурсы потока.
-                if (stream != null)
-                    stream.Dispose();
             }
         }
     }

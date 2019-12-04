@@ -7,7 +7,7 @@ namespace RatesParsingConsole.Models
     /// <summary>
     /// Содержит данные о валюте.
     /// </summary>
-    class CurrencyDataModel
+    class CurrencyDataModel : ProcessingResultModel
     {
         /// <summary>
         /// Сокращенное название валюты.
@@ -23,15 +23,5 @@ namespace RatesParsingConsole.Models
         /// Обменный курс валюты.
         /// </summary>
         public decimal ExchangeRate { get; set; }
-
-        /// <summary>
-        /// Успешно ли получены значения валюты.
-        /// </summary>
-        public bool IsSuccessfullyParsed { get; set; }
-
-        /// <summary>
-        /// Описание ошибки при неудачном получении данных валюты.
-        /// </summary>
-        public string ErrorMessage { get; set; }
     }
 }

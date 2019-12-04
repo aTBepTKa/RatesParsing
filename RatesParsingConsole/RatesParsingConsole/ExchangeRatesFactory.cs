@@ -35,44 +35,42 @@ namespace RatesParsingConsole
         /// <returns></returns>
         public BankRatesModel GetCurrencyDatas(BankRequestDto request)
         {
-            // Результат запроса к банку.
-            var bankRatesModel = new BankRatesModel
+            var BankRates = new BankRatesModel
             {
                 BankName = request.BankName,
                 BankCurrency = request.BankCurrency,
-                IsSuccessfullyParsed = true
+                RequestResultStatus = ProcessingResultModel.ProcessingResult.Success
             };
 
-            // Получить html страницу.
             var gettingHtml = new GettingHtml();
             HtmlDocument htmlDocument = gettingHtml.GetHtmlFromWeb(request.RatesUrlPage);
 
-            // Хранилище данных валюты.
-            var currencyDataList = new List<CurrencyDataModel>(request.EndRow - request.StartRow + 1);
+            List<CurrencyDataModel> currencyDataList;
 
             // Выполнить парсинг валют банка по строкам.
             if (htmlDocument != null)
             {
+                currencyDataList = new List<CurrencyDataModel>(request.EndRow - request.StartRow + 1);
                 for (var i = request.StartRow; i <= request.EndRow; i++)
                 {
                     CurrencyDataModel currencyData = GetCurrencyData(htmlDocument, request, i);
                     // Проверить успешность получения данных валюты. Тут что нибудь с енумом будет.
-                    if(!currencyData.IsSuccessfullyParsed)
+                    if (currencyData.RequestResultStatus != ProcessingResultModel.ProcessingResult.Success)
                     {
-                        bankRatesModel.IsSuccessfullyParsed = false;
-                        bankRatesModel.ErrorMessage = "Ошибка при получении данных валюты";
+                        BankRates.RequestResultStatus = ProcessingResultModel.ProcessingResult.ProcessedWithErrors;
+                        BankRates.RequestResultMessage += $"Ошибка при получении данных валюты {currencyData.TextCode}. ";
                     }
                     currencyDataList.Add(currencyData);
                 }
-                bankRatesModel.ExchangeRates = currencyDataList;
+                BankRates.ExchangeRates = currencyDataList;
             }
             else
             {
-                bankRatesModel.IsSuccessfullyParsed = false;
-                bankRatesModel.ErrorMessage = "Ошибка при получении html страницы.";
-                bankRatesModel.ExchangeRates = Array.Empty<CurrencyDataModel>();
+                BankRates.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
+                BankRates.RequestResultMessage = "Ошибка при получении html страницы.";
+                BankRates.ExchangeRates = Array.Empty<CurrencyDataModel>();
             }
-            return bankRatesModel;
+            return BankRates;
         }
 
         /// <summary>
@@ -94,8 +92,8 @@ namespace RatesParsingConsole
             }
             catch (Exception e)
             {
-                currencyData.IsSuccessfullyParsed = false;
-                currencyData.ErrorMessage = $"Ошибка при получении уточненного адреса XPath: {e.Message}";
+                currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
+                currencyData.RequestResultMessage = $"Ошибка при получении уточненного адреса XPath: {e.Message}";
                 return currencyData;
             }
 
@@ -119,17 +117,35 @@ namespace RatesParsingConsole
                 unit = request.GetUnitSubString(unit);
                 textCode = request.GetTextCodeSubString(textCode);
 
-                // Уточнить значения (выдрать подстроку).
-                currencyData.TextCode = textCode;
+                // Конвертация строки в число (обменный курс).
+                currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Success;
+                if (decimal.TryParse(exchangeRate, NumberStyles.Currency, formatInfo, out decimal exchangeRateResult))
+                    currencyData.ExchangeRate = exchangeRateResult;
+                else
+                {
+                    currencyData.ExchangeRate = 0;
+                    currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
+                    currencyData.RequestResultMessage += "Ошибка при конвертации зачения обменного курса (ExchangeRate). ";
+                }
+
+                // Конвертация строки в число (единица измерения).
+                if (int.TryParse(unit, out int unitResult))
+                    currencyData.Unit = unitResult;
+                else
+                {
+                    currencyData.Unit = 0;
+                    currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
+                    currencyData.RequestResultMessage += "Ошибка при конвертации зачения единицы измерения валюты (Unit). ";
+                }
                 currencyData.ExchangeRate = decimal.Parse(exchangeRate, formatInfo);
                 currencyData.Unit = int.Parse(unit, formatInfo);
 
-                currencyData.IsSuccessfullyParsed = true;
+                currencyData.TextCode = textCode;
             }
             catch (Exception e)
             {
-                currencyData.IsSuccessfullyParsed = false;
-                currencyData.ErrorMessage = e.Message;
+                currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
+                currencyData.RequestResultMessage = e.Message;
             }
             return currencyData;
         }
