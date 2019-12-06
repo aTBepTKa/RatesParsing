@@ -28,20 +28,22 @@ namespace RatesParsingConsole
                 }
                 return digitText;
             }
-
             return handler;
         }
 
         /// <summary>
         /// Получить код валюты из конца исходной строки.
         /// </summary>
-        /// <param name="length">Длина строки.</param>
+        /// <param name="length">Длина строки в формате string, так как данные получаем в таком формате.</param>
         /// <returns></returns>
-        public WordProcessingHandler GetTextCodeFromEnd(int length)
+        public WordProcessingHandler GetTextCodeFromEnd(string length)
         {
-            string handler (string text)
-            {                
-                return text.Substring(text.Length - length);
+            if (!int.TryParse(length, out int newLength))
+                newLength = 0;
+
+            string handler(string text)
+            {
+                return text.Substring(text.Length - newLength);
             }
             return handler;
         }
@@ -55,7 +57,7 @@ namespace RatesParsingConsole
         /// <returns></returns>
         public WordProcessingHandler ReplaceSubstring(string oldText, string newText)
         {
-            string handler (string text)
+            string handler(string text)
             {
                 return text.Replace(oldText, newText);
             }
@@ -69,6 +71,11 @@ namespace RatesParsingConsole
         /// <returns></returns>
         public WordProcessingHandler GetFixedValue(string value)
         {
+            WordProcessingHandler hand = delegate (string text)
+            {
+                return text;
+            };
+
             string handler(string text)
             {
                 return value;

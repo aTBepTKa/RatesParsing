@@ -1,11 +1,9 @@
 ﻿using HtmlAgilityPack;
 using RatesParsingConsole.Models;
 using System;
-using System.Threading;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using System.Text;
 using System.Reflection;
 
 namespace RatesParsingConsole
@@ -53,7 +51,8 @@ namespace RatesParsingConsole
         private BankRatesModel GetBankRatesFromHtml(HtmlDocument html, BankRequestDto request)
         {
             // Получить методы для обработки текста.
-            
+            WordProcessingHandler UnitProcess = GetMethods(request.UnitScripts);
+            WordProcessingHandler TextCodeProcess = GetMethods(request.TextCodeScripts);
 
             var bankRates = new BankRatesModel
             {
@@ -69,7 +68,7 @@ namespace RatesParsingConsole
                 currencyDataList = new List<CurrencyDataModel>(request.EndRow - request.StartRow + 1);
                 for (var i = request.StartRow; i <= request.EndRow; i++)
                 {
-                    CurrencyDataModel currencyData = GetCurrencyData(html, request, i);
+                    CurrencyDataModel currencyData = GetCurrencyData(html, request, i, UnitProcess, TextCodeProcess);
                     // Проверить успешность получения данных валюты.
                     if (currencyData.RequestResultStatus != ProcessingResultModel.ProcessingResult.Success)
                     {
@@ -89,7 +88,33 @@ namespace RatesParsingConsole
             return bankRates;
         }
 
-
+        /// <summary>
+        /// Получить методы из словаря.
+        /// </summary>
+        /// <param name="keys">Наименование методов и соответствующие параметры.</param>
+        /// <returns></returns>
+        private WordProcessingHandler GetMethods(IDictionary<string, string[]> keys)
+        {
+            if (keys != null)
+            {
+                WordProcessingHandler methods = null;
+                // Получить тип объекта, содержащего методы.
+                Type scriptsType = typeof(ScriptCommands);
+                // Создать объект, содержащий методы.
+                object scriptsObject = Activator.CreateInstance(scriptsType);
+                // Получить список методов.
+                foreach (var key in keys)
+                {
+                    // Получить метод по заданному имени из словаря.
+                    MethodInfo method = scriptsType.GetMethod(key.Key);
+                    var newMethod = method.Invoke(scriptsObject, key.Value);
+                    methods += newMethod as WordProcessingHandler;
+                }
+                return methods;
+            }
+            else
+                return text => text;
+        }
 
         /// <summary>
         /// Получить данные одной валюты.
@@ -97,7 +122,8 @@ namespace RatesParsingConsole
         /// <param name="html">Страница для поиска валюты.</param>
         /// <param name="pathes">Адреса XPath.</param>
         /// <returns></returns>
-        private CurrencyDataModel GetCurrencyData(HtmlDocument html, BankRequestDto request, int rowNum)
+        private CurrencyDataModel GetCurrencyData(HtmlDocument html, BankRequestDto request, int rowNum,
+            WordProcessingHandler unitProcess, WordProcessingHandler textcodeProcess)
         {
             // Данные валюты.
             var currencyData = new CurrencyDataModel();
@@ -132,8 +158,8 @@ namespace RatesParsingConsole
                 string unit = GetValueByXPath(html, pathes.Unit);
 
                 // Выделить из строки необходимый текст.
-                unit = request.GetUnitSubString(unit);
-                textCode = request.GetTextCodeSubString(textCode);
+                unit = unitProcess(unit);
+                textCode = textcodeProcess(textCode);
 
                 // Конвертация строки в число (обменный курс).
                 currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Success;

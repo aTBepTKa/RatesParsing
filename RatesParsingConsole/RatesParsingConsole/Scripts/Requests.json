@@ -12,6 +12,9 @@
       "TextCode": "//*[@id='currency_id']/table/tr[$VARIABLE]/td[1]",
       "Unit": "//*[@id='currency_id']/table/tr[$VARIABLE]/td[2]",
       "ExchangeRate": "//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
+    },
+    "UnitScripts": {
+      "GetNumberFromText": []
     }
   },
   {
@@ -27,6 +30,12 @@
       "TextCode": "//*[@id='article']/table/tr/td/center/table[1]/tr[$VARIABLE]/td[2]",
       "Unit": "//*[@id='article']/table/tr/td/center/table[1]/tr[$VARIABLE]/td[2]",
       "ExchangeRate": "//*[@id='article']/table/tr/td/center/table[1]/tr[$VARIABLE]/td[3]"
+    },
+    "UnitScripts": {
+      "GetNumberFromText": []
+    },
+    "TextCodeScripts": {
+      "GetTextCodeFromEnd": [ "3" ]
     }
   },
   {
@@ -42,6 +51,24 @@
       "TextCode": "//*[@id='content']/table/tbody/tr[$VARIABLE]/td[2]",
       "Unit": "//*[@id='content']/table/tbody/tr[$VARIABLE]/td[3]",
       "ExchangeRate": "//*[@id='content']/table/tbody/tr[$VARIABLE]/td[5]"
+    }
+  },
+  {
+    "BankName": "European Central Bank",
+    "BankCurrency": "EUR",
+    "RatesUrlPage": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
+    "NumberDecimalSeparator": ".",
+    "NumberGroupSeparator": ",",
+    "StartRow": 1,
+    "EndRow": 32,
+    "VariablePartOfXpath": "$VARIABLE",
+    "XPathes": {
+      "TextCode": "//*[@id='ecb-content-col']/main/div/table/tbody/tr[$VARIABLE]/td[1]",
+      "Unit": "//*[@id='ecb-content-col']/main/div/table/tbody/tr[$VARIABLE]/td[1]",
+      "ExchangeRate": "//*[@id='ecb-content-col']/main/div/table/tbody/tr[$VARIABLE]/td[3]"
+    },
+    "UnitScripts": {
+      "GetFixedValue": [ "1" ]
     }
   }
 ]

@@ -25,7 +25,7 @@ namespace RatesParsingConsole
         static void Main(string[] args)
         {
             // Временно. Переключатель получения запроса: из файла или из кода.
-            GetRequestType requestType = GetRequestType.FromCode;
+            GetRequestType requestType = GetRequestType.FromFile;
 
             // Формируем список запросов к бакнкам.
             IEnumerable<BankRequestDto> requests;
@@ -43,14 +43,12 @@ namespace RatesParsingConsole
             // Получить данные курсов по банкам асинхронно.
             IEnumerable<BankRatesModel> banks = GetBankRatesAsync(requests).Result;
 
+            // Получить данные курсов по банкам синхронно.
+            //IEnumerable<BankRatesModel> banks = GetBankRates(requests);
+
             // Вывести полученные значения.
             ShowExchangeRates(banks);
             WriteToFileAsync(banks);
-
-            // Тест рефлексии.
-            var a = GetMethodsFromString("GetNumberFromText");
-            var b = a("100 500 ABS 777");
-            Console.WriteLine(b);
 
             Console.ReadKey();
         }
@@ -138,14 +136,11 @@ namespace RatesParsingConsole
                 Unit = "//*[@id='currency_id']/table/tr[$VARIABLE]/td[2]",
                 ExchangeRate = "//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
             };
-            // Сформировать число из найденных в строке цифр.
-            // Для обработки текста используется делегат, в который передается готовый метод из класса ScriptCommands. 
-
-            // Схема работы обработки текста:
-            // - класс BankRequestDto содержит делегаты для обработки каждого полученного поля (TextCode, Unit, ExchangeRate),
-            // - класс ScriptCommands содержит готовые методы для обработки текста.
-            // - Таким образом при формировании запроса получаем нужные метода из класса ScriptCommands и передаем их в делегат класса BankRequestDto.
-            bank1.GetUnitSubString = scriptCommands.GetNumberFromText();
+            // Задаем команды для обработки текста.
+            bank1.UnitScripts = new Dictionary<string, string[]>
+            {
+                {"GetNumberFromText", new string[0]}
+            };
             bankDataModels.Add(bank1);
 
 
@@ -170,10 +165,14 @@ namespace RatesParsingConsole
                 ExchangeRate = @"//*[@id=""article""]/table/tr/td/center/table[1]/tr[$VARIABLE]/td[3]"
             };
             // Сформировать число из найденных в строке цифр.
-            bank2.GetUnitSubString = scriptCommands.GetNumberFromText();
-            // Сформировать текстовый код валюты получив последние три символа строки.
-            var textCodeLength = 3;
-            bank2.GetTextCodeSubString = scriptCommands.GetTextCodeFromEnd(textCodeLength);
+            bank2.UnitScripts = new Dictionary<string, string[]>
+            {
+                {"GetNumberFromText", new string[0] }
+            };
+            bank2.TextCodeScripts = new Dictionary<string, string[]>
+            {
+                {"GetTextCodeFromEnd", new string[] {"3"} }
+            };
             bankDataModels.Add(bank2);
 
 
@@ -209,6 +208,7 @@ namespace RatesParsingConsole
         /// <returns></returns>
         private static IEnumerable<BankRequestDto> GetBankRequestsFromFile(string fileName)
         {
+            // TODO: обработать ошибки чтения .json файла.
             IEnumerable<BankRequestDto> requests;
 
             string JsonText;
@@ -291,24 +291,6 @@ namespace RatesParsingConsole
             {
                 Console.WriteLine($"Ошибка при записи в файл: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// Получить методы из текстового списка.
-        /// </summary>
-        /// <param name="methodsString">Список методов.</param>
-        /// <returns></returns>
-        private static WordProcessingHandler GetMethodsFromString(string methodName)
-        {
-            // Получить необходимый тип.
-            Type t = typeof(ScriptCommands);
-            // Получить необходимый метод.
-            object obj = Activator.CreateInstance(t);
-            MethodInfo method = t.GetMethod(methodName);
-
-
-            WordProcessingHandler NewMethod = method.Invoke(obj, new object[] {  }) as WordProcessingHandler;
-            return NewMethod;
         }
 
         private enum GetRequestType { FromFile, FromCode }
