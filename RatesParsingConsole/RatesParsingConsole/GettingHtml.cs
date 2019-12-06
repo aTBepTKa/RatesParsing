@@ -39,7 +39,30 @@ namespace RatesParsingConsole
         /// <returns></returns>
         public async Task<HtmlDocument> GetHtmlFromWebAsync(string URL)
         {
-            return await Task.Run(() => GetHtmlFromWeb(URL));
+            var web = new HtmlWeb();
+            var document = new HtmlDocument();
+            try
+            {
+                document = await web.LoadFromWebAsync(URL);
+            }
+            catch (UriFormatException)
+            {
+                Console.WriteLine($"Не верный формат URL ({URL}).{Environment.NewLine}");
+                return null;
+            }
+            catch (System.Net.WebException)
+            {
+                Console.WriteLine($"Запрашиваемая страница не найдена ({URL}).{Environment.NewLine}");
+                return null;
+            }
+            catch (ArgumentNullException)
+            {
+                Console.WriteLine($"Запрашиваемая страница не задана.{Environment.NewLine}");
+                return null;
+            }
+
+            Console.WriteLine($"Страница {URL} успешно загружена.");
+            return document;
         }
 
         /// <summary>

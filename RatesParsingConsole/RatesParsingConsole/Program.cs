@@ -19,7 +19,7 @@ namespace RatesParsingConsole
             var requests = new List<BankRequestDto>(GetBankRequest());
 
             // Получить данные курсов по банкам асинхронно.
-            IEnumerable<BankRatesModel> banks = GetBankRatesAsync(requests);
+            IEnumerable<BankRatesModel> banks = GetBankRatesAsync(requests).Result;
 
             // Вывести полученные значения.
             ShowExchangeRates(banks);
@@ -34,12 +34,8 @@ namespace RatesParsingConsole
         /// </summary>
         /// <param name="requests">Список запросов.</param>
         /// <returns></returns>
-        private static IEnumerable<BankRatesModel> GetBankRatesAsync(IEnumerable<BankRequestDto> requests)
+        private static async Task<IEnumerable<BankRatesModel>> GetBankRatesAsync(IEnumerable<BankRequestDto> requests)
         {
-            // Время приостановки потока (мс) для проверки работы асинхронности.
-            int[] sleep = new int[] { 2000, 1000, 3000 };
-            int i = 0;
-
             // Инструмент для обработки запроса и получения данных страниц банков.
             var factory = new ExchangeRatesFactory();
 
@@ -49,13 +45,10 @@ namespace RatesParsingConsole
             // Получить данные обменных курсов по каждому банку асинхронно. 
             // (запустить парсинг каждого сайта параллельно)
             foreach (var req in requests)
-                tasks.Add(factory.GetCurrencyDatasAsync(req, sleep[i++]));
+                tasks.Add(factory.GetBankRatesAsync(req));
 
-            // Для проверки асинхронности. Удалить.
-            Thread.Sleep(2000);
-            
             // Подождать завершения всех задач и получить спиок банков с курсами.
-            var banks = Task.WhenAll(tasks).Result;
+            IEnumerable<BankRatesModel> banks = await Task.WhenAll(tasks);
 
             return banks;
         }
@@ -73,7 +66,7 @@ namespace RatesParsingConsole
             var factory = new ExchangeRatesFactory();
             // Получить данные банка по каждому запросу.
             foreach (var req in requsts)
-                banks.Add(factory.GetCurrencyDatas(req));
+                banks.Add(factory.GetBankRates(req));
             return banks;
         }
 
@@ -102,21 +95,20 @@ namespace RatesParsingConsole
                 BankName = "National Bank of Georgia",
                 BankCurrency = "GEL",
                 RatesUrlPage = "https://www.nbg.gov.ge/index.php?m=582&lng=eng",
-                NumberDecimalSeparator = ".",
+                NumberDecimalSeparator = "q",
                 NumberGroupSeparator = ",",
                 StartRow = StartRow1,
                 EndRow = EndRow1,
                 VariablePartOfXpath = VariablePartOfXpath
             };
-            // XPath пути для валюты.            
-            // Шаблон пути.
+            // Шаблон XPath пути для валюты.            
             bank1.XPathes = new CurrencyXPathesDto()
             {
                 TextCode = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[1]",
                 Unit = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[2]",
                 ExchangeRate = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
             };
-            // Получить число (единицу измерения валюты) из строки с текстом.
+            // Сформировать число из найденных в строке цифр.
             bank1.GetUnitSubString = delegate (string text)
             {
                 string digitText = "";
@@ -129,7 +121,6 @@ namespace RatesParsingConsole
 
                 return digitText;
             };
-            // Добавить банк в список.
             bankDataModels.Add(bank1);
 
 
@@ -173,7 +164,7 @@ namespace RatesParsingConsole
                 return NewString;
             };
             bankDataModels.Add(bank2);
-            
+
 
             // Данные для банка 3.
             var StartRow3 = 2;
@@ -225,25 +216,20 @@ namespace RatesParsingConsole
                 }
                 Console.WriteLine();
             }
+
         }
 
         /// <summary>
-        /// Записать полученные данные в файл.
+        /// Записать полученные данные в файл асинхронно.
         /// </summary>
         /// <param name="bankData"></param>
         private static async void WriteToFileAsync(IEnumerable<BankRatesModel> banks)
         {
-            // TODO: в файле затираются старые записи новыми. Если записываем данных меньше, чем было в изначальном файле,
-            // незатертые данные старого файла остаются.
-            // Задать объект потока для записи и задать имя файла.
             FileStream stream = null;
             var fileName = "ExchangeRates.txt";
-
             try
             {
-                // Создать поток.
-                stream = new FileStream(fileName, FileMode.OpenOrCreate);
-                // Записать данные в файл.
+                stream = new FileStream(fileName, FileMode.Create);
                 using (StreamWriter sw = new StreamWriter(stream, System.Text.Encoding.UTF8))
                 {
                     foreach (var bank in banks)
@@ -261,7 +247,7 @@ namespace RatesParsingConsole
                                 await sw.WriteLineAsync();
                             }
                             else
-                                await sw.WriteLineAsync($"Ошибка при получении данных валюты: {Rate.RequestResultMessage}.");
+                                await sw.WriteLineAsync($"Ошибка при получении данных валюты: {Rate.RequestResultMessage}");
                         }
                         await sw.WriteLineAsync();
                     }

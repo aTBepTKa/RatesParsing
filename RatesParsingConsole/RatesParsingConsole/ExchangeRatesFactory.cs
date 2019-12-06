@@ -18,14 +18,15 @@ namespace RatesParsingConsole
         /// <summary>
         /// Получить курсы валют банка асинхронно.
         /// </summary>
-        /// <param name="request">Данные для запроса банку.</param>
-        /// <param name="sleep">(Временно). Время приостановки потока для проверки асинхронности.</param>
+        /// <param name="request">Данные для запроса к банку.</param>
         /// <returns></returns>
-        public async Task<BankRatesModel> GetCurrencyDatasAsync(BankRequestDto request, int sleep = 0)
+        public async Task<BankRatesModel> GetBankRatesAsync(BankRequestDto request)
         {
-            Thread.Sleep(sleep);
-            var result = await Task.Run(() => GetCurrencyDatas(request));
-            return result;
+            var gettingHtml = new GettingHtml();
+            HtmlDocument htmlDocument = await gettingHtml.GetHtmlFromWebAsync(request.RatesUrlPage);
+
+            var bankRates = GetBankRatesFromHtml(htmlDocument, request);
+            return bankRates;
         }
 
         /// <summary>
@@ -33,44 +34,55 @@ namespace RatesParsingConsole
         /// </summary>
         /// <param name="request">Данные для запроса банку.</param>
         /// <returns></returns>
-        public BankRatesModel GetCurrencyDatas(BankRequestDto request)
+        public BankRatesModel GetBankRates(BankRequestDto request)
         {
-            var BankRates = new BankRatesModel
+            var gettingHtml = new GettingHtml();
+            HtmlDocument htmlDocument = gettingHtml.GetHtmlFromWeb(request.RatesUrlPage);
+
+            var bankRates = GetBankRatesFromHtml(htmlDocument, request);
+            return bankRates;
+        }
+
+        /// <summary>
+        /// Получить курсы валют банка по заданной html странице.
+        /// </summary>
+        /// <param name="html">Страница с обменными курсами.</param>
+        /// <param name="request">Данные для запроса к банку.</param>
+        /// <returns></returns>
+        private BankRatesModel GetBankRatesFromHtml(HtmlDocument html, BankRequestDto request)
+        {
+            var bankRates = new BankRatesModel
             {
                 BankName = request.BankName,
                 BankCurrency = request.BankCurrency,
                 RequestResultStatus = ProcessingResultModel.ProcessingResult.Success
             };
-
-            var gettingHtml = new GettingHtml();
-            HtmlDocument htmlDocument = gettingHtml.GetHtmlFromWeb(request.RatesUrlPage);
-
             List<CurrencyDataModel> currencyDataList;
 
             // Выполнить парсинг валют банка по строкам.
-            if (htmlDocument != null)
+            if (html != null)
             {
                 currencyDataList = new List<CurrencyDataModel>(request.EndRow - request.StartRow + 1);
                 for (var i = request.StartRow; i <= request.EndRow; i++)
                 {
-                    CurrencyDataModel currencyData = GetCurrencyData(htmlDocument, request, i);
-                    // Проверить успешность получения данных валюты. Тут что нибудь с енумом будет.
+                    CurrencyDataModel currencyData = GetCurrencyData(html, request, i);
+                    // Проверить успешность получения данных валюты.
                     if (currencyData.RequestResultStatus != ProcessingResultModel.ProcessingResult.Success)
                     {
-                        BankRates.RequestResultStatus = ProcessingResultModel.ProcessingResult.ProcessedWithErrors;
-                        BankRates.RequestResultMessage += $"Ошибка при получении данных валюты {currencyData.TextCode}. ";
+                        bankRates.RequestResultStatus = ProcessingResultModel.ProcessingResult.ProcessedWithErrors;
+                        bankRates.RequestResultMessage += $"Ошибка при получении данных валюты. {currencyData.TextCode}{Environment.NewLine}";
                     }
                     currencyDataList.Add(currencyData);
                 }
-                BankRates.ExchangeRates = currencyDataList;
+                bankRates.ExchangeRates = currencyDataList;
             }
             else
             {
-                BankRates.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
-                BankRates.RequestResultMessage = "Ошибка при получении html страницы.";
-                BankRates.ExchangeRates = Array.Empty<CurrencyDataModel>();
+                bankRates.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
+                bankRates.RequestResultMessage = "Ошибка при получении html страницы.";
+                bankRates.ExchangeRates = Array.Empty<CurrencyDataModel>();
             }
-            return BankRates;
+            return bankRates;
         }
 
         /// <summary>
@@ -98,7 +110,7 @@ namespace RatesParsingConsole
             }
 
 
-            // Установить разделитель разрядов и дроби.
+            // Установить разделитель разрядов и десятичной части.
             var formatInfo = new NumberFormatInfo
             {
                 NumberDecimalSeparator = request.NumberDecimalSeparator,
@@ -137,15 +149,18 @@ namespace RatesParsingConsole
                     currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
                     currencyData.RequestResultMessage += "Ошибка при конвертации зачения единицы измерения валюты (Unit). ";
                 }
-                currencyData.ExchangeRate = decimal.Parse(exchangeRate, formatInfo);
-                currencyData.Unit = int.Parse(unit, formatInfo);
 
                 currencyData.TextCode = textCode;
             }
-            catch (Exception e)
+            catch (FormatException e)
             {
                 currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
                 currencyData.RequestResultMessage = e.Message;
+            }
+            catch (ArgumentNullException e)
+            {
+                currencyData.RequestResultStatus = ProcessingResultModel.ProcessingResult.Error;
+                currencyData.RequestResultMessage = e.ParamName;
             }
             return currencyData;
         }
@@ -170,11 +185,11 @@ namespace RatesParsingConsole
             }
             catch (System.Xml.XPath.XPathException)
             {
-                throw new Exception($"Ошибка при обработке XPath адреса {xpath}. ");
+                throw new System.Xml.XPath.XPathException($"Ошибка при обработке XPath адреса {xpath}. ");
             }
             catch (ArgumentNullException)
             {
-                throw new Exception("Отсутствует XPath адрес");
+                throw new ArgumentNullException("Отсутствует XPath адрес");
             }
 
             if (resultNode != null)
@@ -184,7 +199,7 @@ namespace RatesParsingConsole
                 result = GetClearText(result);
             }
             else
-                throw new Exception("При поиске по адресу XPath получено значение Null");
+                throw new ArgumentNullException("При поиске по адресу XPath получено значение Null");
             return result;
         }
 
@@ -202,7 +217,7 @@ namespace RatesParsingConsole
         }
 
         /// <summary>
-        /// Получить 
+        /// Получить кокнертный XPath путем замены переменной части на конкретное значение.
         /// </summary>
         /// <param name="xPathesDto">XPath адрес.</param>
         /// <param name="OldSubString">Переменная часть XPath адреса</param>

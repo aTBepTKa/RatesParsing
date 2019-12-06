@@ -17,33 +17,7 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Результат обработки запроса.
         /// </summary>
-        public ProcessingResult RequestResultStatus
-        {
-            get
-            {
-                return requestResultStatus;
-            }
-            set
-            {
-                requestResultStatus = value;
-                switch (requestResultStatus)
-                {
-                    case ProcessingResult.Success:
-                        RequestResultMessage = "Данные успешно получены.";
-                        return;
-                    case ProcessingResult.ProcessedWithErrors:
-                        RequestResultMessage = "Завершено с ошибками.";
-                        return;
-                    case ProcessingResult.Error:
-                        RequestResultMessage = "Ошибка при получении данных.";
-                        return;
-                    case ProcessingResult.None:
-                        RequestResultMessage = "Данные о результате обработки запроса отсутствуют.";
-                        return;
-                }
-            }
-        }
-        private ProcessingResult requestResultStatus;
+        public ProcessingResult RequestResultStatus { get; set; }
 
         /// <summary>
         /// Описание результата обработки запроса.
