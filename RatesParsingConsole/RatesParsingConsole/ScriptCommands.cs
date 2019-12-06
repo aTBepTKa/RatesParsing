@@ -37,13 +37,13 @@ namespace RatesParsingConsole
         /// </summary>
         /// <param name="length">Длина строки.</param>
         /// <returns></returns>
-        public WordProcessingHandler GetCurrencyTextCodeFromEnd(int length)
+        public WordProcessingHandler GetTextCodeFromEnd(int length)
         {
-            string NewString (string text)
+            string handler (string text)
             {                
                 return text.Substring(text.Length - length);
             }
-            return NewString;
+            return handler;
         }
 
         /// <summary>
@@ -55,11 +55,11 @@ namespace RatesParsingConsole
         /// <returns></returns>
         public WordProcessingHandler ReplaceSubstring(string oldText, string newText)
         {
-            string NewString (string text)
+            string handler (string text)
             {
                 return text.Replace(oldText, newText);
             }
-            return NewString;
+            return handler;
         }
 
         /// <summary>
@@ -69,11 +69,11 @@ namespace RatesParsingConsole
         /// <returns></returns>
         public WordProcessingHandler GetFixedValue(string value)
         {
-            string NewString(string text)
+            string handler(string text)
             {
                 return value;
             }
-            return NewString;
+            return handler;
         }
     }
 }

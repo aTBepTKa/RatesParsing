@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Text;
+using System.Reflection;
 
 namespace RatesParsingConsole
 {
@@ -51,6 +52,9 @@ namespace RatesParsingConsole
         /// <returns></returns>
         private BankRatesModel GetBankRatesFromHtml(HtmlDocument html, BankRequestDto request)
         {
+            // Получить методы для обработки текста.
+            
+
             var bankRates = new BankRatesModel
             {
                 BankName = request.BankName,
@@ -84,6 +88,8 @@ namespace RatesParsingConsole
             }
             return bankRates;
         }
+
+
 
         /// <summary>
         /// Получить данные одной валюты.

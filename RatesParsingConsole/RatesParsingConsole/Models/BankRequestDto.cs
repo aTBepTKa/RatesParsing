@@ -57,6 +57,16 @@ namespace RatesParsingConsole.Models
         public int EndRow { get; set; }
 
         /// <summary>
+        /// Команды для обработки строки единицы измерения Unit.
+        /// </summary>
+        public IEnumerable<string> UnitTextScripts { get; set; }
+
+        /// <summary>
+        /// Команды для обработки строки текстового года валюты TextCode.
+        /// </summary>
+        public IEnumerable<string> TextCodeTextScripts { get; set; }
+
+        /// <summary>
         /// Получить строку единицы измерения валюты в формате для парсинга.
         /// </summary>
         public WordProcessingHandler GetUnitSubString { get; set; } = delegate (string text)

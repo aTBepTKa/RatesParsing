@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RatesParsingConsole.Models;
+using System.Reflection;
 
 namespace RatesParsingConsole
 {
@@ -46,6 +47,10 @@ namespace RatesParsingConsole
             ShowExchangeRates(banks);
             WriteToFileAsync(banks);
 
+            // Тест рефлексии.
+            var a = GetMethodsFromString("GetNumberFromText");
+            var b = a("100 500 ABS 777");
+            Console.WriteLine(b);
 
             Console.ReadKey();
         }
@@ -168,7 +173,7 @@ namespace RatesParsingConsole
             bank2.GetUnitSubString = scriptCommands.GetNumberFromText();
             // Сформировать текстовый код валюты получив последние три символа строки.
             var textCodeLength = 3;
-            bank2.GetTextCodeSubString = scriptCommands.GetCurrencyTextCodeFromEnd(textCodeLength);
+            bank2.GetTextCodeSubString = scriptCommands.GetTextCodeFromEnd(textCodeLength);
             bankDataModels.Add(bank2);
 
 
@@ -287,6 +292,25 @@ namespace RatesParsingConsole
                 Console.WriteLine($"Ошибка при записи в файл: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Получить методы из текстового списка.
+        /// </summary>
+        /// <param name="methodsString">Список методов.</param>
+        /// <returns></returns>
+        private static WordProcessingHandler GetMethodsFromString(string methodName)
+        {
+            // Получить необходимый тип.
+            Type t = typeof(ScriptCommands);
+            // Получить необходимый метод.
+            object obj = Activator.CreateInstance(t);
+            MethodInfo method = t.GetMethod(methodName);
+
+
+            WordProcessingHandler NewMethod = method.Invoke(obj, new object[] {  }) as WordProcessingHandler;
+            return NewMethod;
+        }
+
         private enum GetRequestType { FromFile, FromCode }
     }
 }
