@@ -1,0 +1,8 @@
+https://www.nbg.gov.ge/index.php?m=582&lng=eng
+http://www.nbp.pl/kursy/xml/LastA.xml
+https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml
+https://www.cbar.az/currency/rates
+http://www.nbrb.by/Services/XmlExRates.aspx
+http://www.nationalbank.kz/rss/get_rates.cfm
+https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange
+https://www.nbkr.kg/XML/daily.xml

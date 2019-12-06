@@ -1,0 +1,47 @@
+[
+  {
+    "BankName": "National Bank of Georgia",
+    "BankCurrency": "GEL",
+    "RatesUrlPage": "https://www.nbg.gov.ge/index.php?m=582&lng=eng",
+    "NumberDecimalSeparator": ".",
+    "NumberGroupSeparator": ",",
+    "StartRow": 1,
+    "EndRow": 43,
+    "VariablePartOfXpath": "$VARIABLE",
+    "XPathes": {
+      "TextCode": "//*[@id='currency_id']/table/tr[$VARIABLE]/td[1]",
+      "Unit": "//*[@id='currency_id']/table/tr[$VARIABLE]/td[2]",
+      "ExchangeRate": "//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
+    }
+  },
+  {
+    "BankName": "National Bank of Poland",
+    "BankCurrency": "PLN",
+    "RatesUrlPage": "https://www.nbp.pl/homen.aspx?f=/kursy/RatesA.html",
+    "NumberDecimalSeparator": ".",
+    "NumberGroupSeparator": ",",
+    "StartRow": 2,
+    "EndRow": 36,
+    "VariablePartOfXpath": "$VARIABLE",
+    "XPathes": {
+      "TextCode": "//*[@id='article']/table/tr/td/center/table[1]/tr[$VARIABLE]/td[2]",
+      "Unit": "//*[@id='article']/table/tr/td/center/table[1]/tr[$VARIABLE]/td[2]",
+      "ExchangeRate": "//*[@id='article']/table/tr/td/center/table[1]/tr[$VARIABLE]/td[3]"
+    }
+  },
+  {
+    "BankName": "The Central Bank of the Russian Federation",
+    "BankCurrency": "RUB",
+    "RatesUrlPage": "https://www.cbr.ru/eng/currency_base/daily/",
+    "NumberDecimalSeparator": ".",
+    "NumberGroupSeparator": ",",
+    "StartRow": 2,
+    "EndRow": 35,
+    "VariablePartOfXpath": "$VARIABLE",
+    "XPathes": {
+      "TextCode": "//*[@id='content']/table/tbody/tr[$VARIABLE]/td[2]",
+      "Unit": "//*[@id='content']/table/tbody/tr[$VARIABLE]/td[3]",
+      "ExchangeRate": "//*[@id='content']/table/tbody/tr[$VARIABLE]/td[5]"
+    }
+  }
+]

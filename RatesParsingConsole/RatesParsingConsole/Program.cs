@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RatesParsingConsole.Models;
@@ -16,7 +17,9 @@ namespace RatesParsingConsole
         static void Main(string[] args)
         {
             // Формируем список запросов к бакнкам.
-            var requests = new List<BankRequestDto>(GetBankRequest());
+            //var requests = GetBankRequestsFromCode();
+            var requestsFileName = @"D:\Projects\RatesParsing\RatesParsingConsole\RatesParsingConsole\Scripts\Requests.json";
+            var requests = GetBankRequestsFromFile(requestsFileName);
 
             // Получить данные курсов по банкам асинхронно.
             IEnumerable<BankRatesModel> banks = GetBankRatesAsync(requests).Result;
@@ -24,6 +27,7 @@ namespace RatesParsingConsole
             // Вывести полученные значения.
             ShowExchangeRates(banks);
             WriteToFileAsync(banks);
+
 
             Console.ReadKey();
         }
@@ -71,10 +75,10 @@ namespace RatesParsingConsole
         }
 
         /// <summary>
-        /// Сформировать список банков с данными запроса.
+        /// Получить список запросов к банкам из кода.
         /// </summary>
         /// <returns></returns>
-        private static IEnumerable<BankRequestDto> GetBankRequest()
+        private static IEnumerable<BankRequestDto> GetBankRequestsFromCode()
         {
             // TODO: реализовать работу с данными JSON.
 
@@ -95,7 +99,7 @@ namespace RatesParsingConsole
                 BankName = "National Bank of Georgia",
                 BankCurrency = "GEL",
                 RatesUrlPage = "https://www.nbg.gov.ge/index.php?m=582&lng=eng",
-                NumberDecimalSeparator = "q",
+                NumberDecimalSeparator = ".",
                 NumberGroupSeparator = ",",
                 StartRow = StartRow1,
                 EndRow = EndRow1,
@@ -104,9 +108,9 @@ namespace RatesParsingConsole
             // Шаблон XPath пути для валюты.            
             bank1.XPathes = new CurrencyXPathesDto()
             {
-                TextCode = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[1]",
-                Unit = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[2]",
-                ExchangeRate = @"//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
+                TextCode = "//*[@id='currency_id']/table/tr[$VARIABLE]/td[1]",
+                Unit = "//*[@id='currency_id']/table/tr[$VARIABLE]/td[2]",
+                ExchangeRate = "//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
             };
             // Сформировать число из найденных в строке цифр.
             bank1.GetUnitSubString = delegate (string text)
@@ -182,13 +186,36 @@ namespace RatesParsingConsole
             };
             bank3.XPathes = new CurrencyXPathesDto()
             {
-                TextCode = @"//*[@id=""content""]/table/tbody/tr[$VARIABLE]/td[2]",
-                Unit = @"//*[@id=""content""]/table/tbody/tr[$VARIABLE]/td[3]",
-                ExchangeRate = @"//*[@id=""content""]/table/tbody/tr[$VARIABLE]/td[5]"
+                TextCode = @"//*[@id='content']/table/tbody/tr[$VARIABLE]/td[2]",
+                Unit = @"//*[@id='content']/table/tbody/tr[$VARIABLE]/td[3]",
+                ExchangeRate = @"//*[@id='content']/table/tbody/tr[$VARIABLE]/td[5]"
             };
             bankDataModels.Add(bank3);
 
             return bankDataModels;
+        }
+
+        /// <summary>
+        /// Получить список запросов к банкам из .json файла
+        /// </summary>
+        /// <param name="fileName">Путь к файлу .json.</param>
+        /// <returns></returns>
+        private static IEnumerable<BankRequestDto> GetBankRequestsFromFile(string fileName)
+        {
+            IEnumerable<BankRequestDto> banks;
+            
+            string JsonText;
+            if (File.Exists(fileName))
+            {
+                using (StreamReader sr = new StreamReader(fileName, System.Text.Encoding.UTF8))
+                    JsonText = sr.ReadToEnd();
+                banks = JsonSerializer.Deserialize<IEnumerable<BankRequestDto>>(JsonText);
+                return banks;
+            }
+            else
+            {
+                return Array.Empty<BankRequestDto>();
+            }
         }
 
         /// <summary>
