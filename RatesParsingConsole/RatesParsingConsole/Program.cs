@@ -8,6 +8,13 @@ using RatesParsingConsole.Models;
 
 namespace RatesParsingConsole
 {
+    /// <summary>
+    /// Обработчик для преобразования строки.
+    /// </summary>
+    /// <param name="text">Исходный текст.</param>
+    /// <returns></returns>
+    public delegate string WordProcessingHandler(string text);
+
     class Program
     {
         /// <summary>
@@ -16,10 +23,21 @@ namespace RatesParsingConsole
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            // Временно. Переключатель получения запроса: из файла или из кода.
+            GetRequestType requestType = GetRequestType.FromCode;
+
             // Формируем список запросов к бакнкам.
-            //var requests = GetBankRequestsFromCode();
-            var requestsFileName = @"D:\Projects\RatesParsing\RatesParsingConsole\RatesParsingConsole\Scripts\Requests.json";
-            var requests = GetBankRequestsFromFile(requestsFileName);
+            IEnumerable<BankRequestDto> requests;
+
+            if (requestType == GetRequestType.FromCode)
+                requests = GetBankRequestsFromCode();
+            else if (requestType == GetRequestType.FromFile)
+            {
+                var requestsFileName = @"D:\Projects\RatesParsing\RatesParsingConsole\RatesParsingConsole\Scripts\Requests.json";
+                requests = GetBankRequestsFromFile(requestsFileName);
+            }
+            else
+                requests = null;
 
             // Получить данные курсов по банкам асинхронно.
             IEnumerable<BankRatesModel> banks = GetBankRatesAsync(requests).Result;
@@ -84,10 +102,13 @@ namespace RatesParsingConsole
 
             // Список банков.
             var bankDataModels = new List<BankRequestDto>();
+            // Содержит методы для обработки текста.
+            ScriptCommands scriptCommands = new ScriptCommands();
 
             // Установить данные для банков.
             // Переменная часть пути XPath для всех банков.
             var VariablePartOfXpath = "$VARIABLE";
+
 
             // Данные для Банка 1.
             // Данные для реализации цикла перебора строк с курсами валют.
@@ -113,18 +134,13 @@ namespace RatesParsingConsole
                 ExchangeRate = "//*[@id='currency_id']/table/tr[$VARIABLE]/td[3]"
             };
             // Сформировать число из найденных в строке цифр.
-            bank1.GetUnitSubString = delegate (string text)
-            {
-                string digitText = "";
+            // Для обработки текста используется делегат, в который передается готовый метод из класса ScriptCommands. 
 
-                foreach (char ch in text)
-                {
-                    if (char.IsDigit(ch))
-                        digitText += ch;
-                }
-
-                return digitText;
-            };
+            // Схема работы обработки текста:
+            // - класс BankRequestDto содержит делегаты для обработки каждого полученного поля (TextCode, Unit, ExchangeRate),
+            // - класс ScriptCommands содержит готовые методы для обработки текста.
+            // - Таким образом при формировании запроса получаем нужные метода из класса ScriptCommands и передаем их в делегат класса BankRequestDto.
+            bank1.GetUnitSubString = scriptCommands.GetNumberFromText();
             bankDataModels.Add(bank1);
 
 
@@ -149,24 +165,10 @@ namespace RatesParsingConsole
                 ExchangeRate = @"//*[@id=""article""]/table/tr/td/center/table[1]/tr[$VARIABLE]/td[3]"
             };
             // Сформировать число из найденных в строке цифр.
-            bank2.GetUnitSubString = delegate (string text)
-            {
-                string digitText = "";
-
-                foreach (char ch in text)
-                {
-                    if (char.IsDigit(ch))
-                        digitText += ch;
-                }
-                return digitText;
-            };
+            bank2.GetUnitSubString = scriptCommands.GetNumberFromText();
             // Сформировать текстовый код валюты получив последние три символа строки.
-            bank2.GetTextCodeSubString = delegate (string text)
-            {
-                var CodeLength = 3;
-                var NewString = text.Substring(text.Length - CodeLength);
-                return NewString;
-            };
+            var textCodeLength = 3;
+            bank2.GetTextCodeSubString = scriptCommands.GetCurrencyTextCodeFromEnd(textCodeLength);
             bankDataModels.Add(bank2);
 
 
@@ -202,15 +204,15 @@ namespace RatesParsingConsole
         /// <returns></returns>
         private static IEnumerable<BankRequestDto> GetBankRequestsFromFile(string fileName)
         {
-            IEnumerable<BankRequestDto> banks;
-            
+            IEnumerable<BankRequestDto> requests;
+
             string JsonText;
             if (File.Exists(fileName))
             {
                 using (StreamReader sr = new StreamReader(fileName, System.Text.Encoding.UTF8))
                     JsonText = sr.ReadToEnd();
-                banks = JsonSerializer.Deserialize<IEnumerable<BankRequestDto>>(JsonText);
-                return banks;
+                requests = JsonSerializer.Deserialize<IEnumerable<BankRequestDto>>(JsonText);
+                return requests;
             }
             else
             {
@@ -285,5 +287,6 @@ namespace RatesParsingConsole
                 Console.WriteLine($"Ошибка при записи в файл: {ex.Message}");
             }
         }
+        private enum GetRequestType { FromFile, FromCode }
     }
 }

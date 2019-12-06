@@ -56,7 +56,7 @@
 		}
 	},
 	{
-		"commandName": "Duplicate",
+		"commandName": "Duplicate",     
 		"parameters": {
 			"InputNameKey": "BIC",
 			"CountStandardKeyName": "Rate",

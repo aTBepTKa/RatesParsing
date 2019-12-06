@@ -57,16 +57,9 @@ namespace RatesParsingConsole.Models
         public int EndRow { get; set; }
 
         /// <summary>
-        /// Получить подстроку с необходимыми данными.
-        /// </summary>
-        /// <param name="text">Строка для конвертации.</param>
-        /// <returns></returns>
-        public delegate string GetSubStringHandler(string text);
-
-        /// <summary>
         /// Получить строку единицы измерения валюты в формате для парсинга.
         /// </summary>
-        public GetSubStringHandler GetUnitSubString { get; set; } = delegate (string text)
+        public WordProcessingHandler GetUnitSubString { get; set; } = delegate (string text)
         {
             return text;
         };
@@ -74,7 +67,7 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Получить текстовый код валюты.
         /// </summary>
-        public GetSubStringHandler GetTextCodeSubString { get; set; } = delegate (string text)
+        public WordProcessingHandler GetTextCodeSubString { get; set; } = delegate (string text)
         {
             return text;
         };
