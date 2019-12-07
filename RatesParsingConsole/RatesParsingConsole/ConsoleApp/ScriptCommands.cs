@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using RatesParsingConsole.Models;
+using RatesParsingConsole.DTO;
 
-namespace RatesParsingConsole
+namespace RatesParsingConsole.ConsoleApp
 {
     /// <summary>
     /// Команды для выполнения парсинга.
@@ -71,11 +71,6 @@ namespace RatesParsingConsole
         /// <returns></returns>
         public WordProcessingHandler GetFixedValue(string value)
         {
-            WordProcessingHandler hand = delegate (string text)
-            {
-                return text;
-            };
-
             string handler(string text)
             {
                 return value;

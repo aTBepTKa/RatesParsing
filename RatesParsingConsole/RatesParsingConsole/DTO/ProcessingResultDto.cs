@@ -2,22 +2,22 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.Models
+namespace RatesParsingConsole.DTO
 {
     /// <summary>
     /// Данные результата обработки данных.
     /// </summary>
-    class ProcessingResultModel
+    public class ProcessingResultDto
     {
         /// <summary>
         /// Тип результата обработки.
         /// </summary>
-        public enum ProcessingResult { None, Success, ProcessedWithErrors, Error }
+        public enum ResultType { None, Success, ProcessedWithErrors, Error }
 
         /// <summary>
         /// Результат обработки запроса.
         /// </summary>
-        public ProcessingResult RequestResultStatus { get; set; }
+        public ResultType RequestResultStatus { get; set; }
 
         /// <summary>
         /// Описание результата обработки запроса.

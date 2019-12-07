@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.Models
+namespace RatesParsingConsole.AspApp.Models
 {
     /// <summary>
     /// Данные курсов валют банка.
     /// </summary>
-    class BankRatesModel : ProcessingResultModel
+    class BankRates : ProcessingResult
     {
+        /// <summary>
+        /// ID банка.
+        /// </summary>
+        public int ID { get; set; }
+
         /// <summary>
         /// Название банка.
         /// </summary>
@@ -22,6 +27,7 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Курсы валют банка.
         /// </summary>
-        public IEnumerable<CurrencyDataModel> ExchangeRates { get; set; }
+        public IEnumerable<CurrencyData> ExchangeRates { get; set; }
+
     }
 }

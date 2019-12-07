@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 
-namespace RatesParsingConsole
+namespace RatesParsingConsole.ConsoleApp
 {
     /// <summary>
     /// Работа с входными данными.

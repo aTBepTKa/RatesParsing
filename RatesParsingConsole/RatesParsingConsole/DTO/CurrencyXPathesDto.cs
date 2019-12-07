@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.Models
+namespace RatesParsingConsole.DTO
 {
+    // TODO: Выпилить из модели Dto после прикручивания JSON.
     /// <summary>
-    /// Содержит данные о валюте.
+    /// Содержит XPath пути для валюты.
     /// </summary>
-    class CurrencyDataModel : ProcessingResultModel
+    public class CurrencyXPathesDto
     {
         /// <summary>
         /// Сокращенное название валюты.
@@ -17,11 +18,11 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Единица измерения валюты.
         /// </summary>
-        public int Unit { get; set; }
+        public string Unit { get; set; }
 
         /// <summary>
         /// Обменный курс валюты.
         /// </summary>
-        public decimal ExchangeRate { get; set; }
+        public string ExchangeRate { get; set; }
     }
 }

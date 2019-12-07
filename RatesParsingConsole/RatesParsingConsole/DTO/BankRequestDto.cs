@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using RatesParsingConsole.Models;
+using RatesParsingConsole.DTO;
 
-namespace RatesParsingConsole.Models
+namespace RatesParsingConsole.DTO
 {
     /// <summary>
     /// Данные для запроса к банку.
     /// </summary>
-    class BankRequestDto
+    public class BankRequestDto
     {
 
         /// <summary>
@@ -49,12 +49,12 @@ namespace RatesParsingConsole.Models
         /// <summary>
         /// Начальная строка для считывания.
         /// </summary>
-        public int StartRow { get; set; }
+        public int StartXpathRow { get; set; }
 
         /// <summary>
         /// Последняя строка для считывания.
         /// </summary>
-        public int EndRow { get; set; }
+        public int EndXpathRow { get; set; }
 
         /// <summary>
         /// Команды для обработки строки единицы измерения Unit.

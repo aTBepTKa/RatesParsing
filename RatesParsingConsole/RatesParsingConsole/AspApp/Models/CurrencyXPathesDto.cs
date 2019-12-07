@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RatesParsingConsole.Models
+namespace RatesParsingConsole.AspApp.Models
 {
     // TODO: Выпилить из модели Dto после прикручивания JSON.
     /// <summary>
     /// Содержит XPath пути для валюты.
     /// </summary>
-    class CurrencyXPathesDto
+    public class CurrencyXPathes
     {
         /// <summary>
         /// Сокращенное название валюты.
