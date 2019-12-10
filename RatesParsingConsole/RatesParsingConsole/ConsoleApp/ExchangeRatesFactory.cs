@@ -53,7 +53,6 @@ namespace RatesParsingConsole.ConsoleApp
             // Получить методы для обработки текста.
             WordProcessingHandler UnitProcess = GetMethods(request.UnitScripts);
             WordProcessingHandler TextCodeProcess = GetMethods(request.TextCodeScripts);
-
             var bankRates = new BankRatesDto
             {
                 BankName = request.BankName,
@@ -122,12 +121,15 @@ namespace RatesParsingConsole.ConsoleApp
         /// <param name="html">Страница для поиска валюты.</param>
         /// <param name="pathes">Адреса XPath.</param>
         /// <returns></returns>
-        private CurrencyDataDto GetCurrencyData(HtmlDocument html, BankRequestDto request, int rowNum,
-            WordProcessingHandler unitProcess, WordProcessingHandler textcodeProcess)
+        private CurrencyDataDto GetCurrencyData(HtmlDocument html,
+                                                BankRequestDto request,
+                                                int rowNum,
+                                                WordProcessingHandler unitProcess,
+                                                WordProcessingHandler textcodeProcess)
         {
             // Данные валюты.
             var currencyData = new CurrencyDataDto();
-
+            
             // Установить переменную часть XPath адреса.
             var pathes = new CurrencyXPathesDto();
             try

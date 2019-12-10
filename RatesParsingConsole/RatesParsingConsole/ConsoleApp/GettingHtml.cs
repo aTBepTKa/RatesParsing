@@ -40,7 +40,7 @@ namespace RatesParsingConsole.ConsoleApp
         public async Task<HtmlDocument> GetHtmlFromWebAsync(string URL)
         {
             var web = new HtmlWeb();
-            var document = new HtmlDocument();
+            HtmlDocument document;
             try
             {
                 document = await web.LoadFromWebAsync(URL);

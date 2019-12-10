@@ -64,6 +64,6 @@ namespace RatesParsingConsole.DTO
         /// <summary>
         /// Команды для обработки строки текстового кода валюты TextCode.
         /// </summary>
-        public Dictionary<string, string[]> TextCodeScripts { get; set; }
+        public IDictionary<string, string[]> TextCodeScripts { get; set; }
     }
 }

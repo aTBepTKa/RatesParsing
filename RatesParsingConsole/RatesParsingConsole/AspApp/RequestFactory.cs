@@ -50,7 +50,7 @@ namespace RatesParsingConsole.AspApp
             // Задаем команды для обработки текста.
             bank1.UnitScripts = new Dictionary<string, string[]>
             {
-                {"GetNumberFromText", new string[0]}
+                {"GetNumberFromText", Array.Empty<string>()}
             };
             bankDataModels.Add(bank1);
 
@@ -78,7 +78,7 @@ namespace RatesParsingConsole.AspApp
             // Сформировать число из найденных в строке цифр.
             bank2.UnitScripts = new Dictionary<string, string[]>
             {
-                {"GetNumberFromText", new string[0] }
+                {"GetNumberFromText", Array.Empty<string>() }
             };
             bank2.TextCodeScripts = new Dictionary<string, string[]>
             {

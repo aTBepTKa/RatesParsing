@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RatesParsingConsole.DTO;
@@ -29,7 +30,7 @@ namespace RatesParsingConsole.ConsoleApp
             var factory = new ExchangeRatesFactory();
 
             // Список задач.
-            var tasks = new List<Task<BankRatesDto>>();
+            var tasks = new List<Task<BankRatesDto>>(requests.Count());
 
             // Получить данные обменных курсов по каждому банку асинхронно. 
             // (запустить парсинг каждого сайта параллельно)

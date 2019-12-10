@@ -1,4 +1,6 @@
 ﻿using RatesParsingConsole.AspApp;
+using System;
+using System.Threading.Tasks;
 
 namespace RatesParsingConsole
 {
@@ -14,7 +16,9 @@ namespace RatesParsingConsole
         {
             // Передать управление в с понтом ASP приложение.
             var home = new AspHome();
-            home.StartApp();
+            home.StartAppAsync();
+            Console.WriteLine("Работа программы завершена. Для продолжения нажмите любую клавишу.");
+            Console.ReadKey();
         }
     }
 }
