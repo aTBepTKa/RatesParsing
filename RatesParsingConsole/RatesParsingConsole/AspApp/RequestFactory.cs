@@ -28,10 +28,11 @@ namespace RatesParsingConsole.AspApp
             // Данные для реализации цикла перебора строк с курсами валют.
             var StartRow1 = 1;
             // Последняя строка задана на 2 больше, чтобы проверить отработку ошибок (должно быть 43).
-            var EndRow1 = 45;
+            var EndRow1 = 43;
             var bank1 = new BankRequest
             {
-                BankName = "National Bank of Georgia",
+                Name = "National Bank of Georgia",
+                SwiftCode = "BNLNGE22XXX",
                 BankCurrency = "GEL",
                 RatesUrlPage = "https://www.nbg.gov.ge/index.php?m=582&lng=eng",
                 NumberDecimalSeparator = ".",
@@ -60,7 +61,8 @@ namespace RatesParsingConsole.AspApp
             var EndRow2 = 36;
             var bank2 = new BankRequest
             {
-                BankName = "National Bank of Poland",
+                Name = "National Bank of Poland",
+                SwiftCode = "NBPLPLPWBAN",
                 BankCurrency = "PLN",
                 RatesUrlPage = "https://www.nbp.pl/homen.aspx?f=/kursy/RatesA.html",
                 NumberDecimalSeparator = ".",
@@ -92,7 +94,8 @@ namespace RatesParsingConsole.AspApp
             var EndRow3 = 35;
             var bank3 = new BankRequest
             {
-                BankName = "The Central Bank of the Russian Federation",
+                Name = "The Central Bank of the Russian Federation",
+                SwiftCode = "CBRFRUMMXXX",
                 BankCurrency = "RUB",
                 RatesUrlPage = "https://www.cbr.ru/eng/currency_base/daily/",
                 NumberDecimalSeparator = ".",
@@ -115,7 +118,8 @@ namespace RatesParsingConsole.AspApp
             var EndRow4 = 32;
             var bank4 = new BankRequest
             {
-                BankName = "European Central Bank",
+                Name = "European Central Bank",
+                SwiftCode = "ECBFDEFFEUM",
                 BankCurrency = "EUR",
                 RatesUrlPage = "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
                 NumberDecimalSeparator = ".",

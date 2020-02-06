@@ -3,8 +3,8 @@ using RatesParsingConsole.DTO;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace RatesParsingConsole.ConsoleApp
 {
@@ -25,6 +25,7 @@ namespace RatesParsingConsole.ConsoleApp
             HtmlDocument htmlDocument = await gettingHtml.GetHtmlFromWebAsync(request.RatesUrlPage);
 
             var bankRates = GetBankRatesFromHtml(htmlDocument, request);
+            bankRates.DateStamp = DateTime.Now;
             return bankRates;
         }
 
@@ -55,8 +56,9 @@ namespace RatesParsingConsole.ConsoleApp
             WordProcessingHandler TextCodeProcess = GetMethods(request.TextCodeScripts);
             var bankRates = new BankRatesDto
             {
-                BankName = request.BankName,
-                BankCurrency = request.BankCurrency,
+                Name = request.Name,
+                Currency = request.Currency,
+                SwiftCode = request.SwiftCode,
                 RequestResultStatus = ProcessingResultDto.ResultType.Success
             };
             List<CurrencyDataDto> currencyDataList;
@@ -129,7 +131,7 @@ namespace RatesParsingConsole.ConsoleApp
         {
             // Данные валюты.
             var currencyData = new CurrencyDataDto();
-            
+
             // Установить переменную часть XPath адреса.
             var pathes = new CurrencyXPathesDto();
             try
@@ -166,10 +168,10 @@ namespace RatesParsingConsole.ConsoleApp
                 // Конвертация строки в число (обменный курс).
                 currencyData.RequestResultStatus = ProcessingResultDto.ResultType.Success;
                 if (decimal.TryParse(exchangeRate, NumberStyles.Currency, formatInfo, out decimal exchangeRateResult))
-                    currencyData.ExchangeRate = exchangeRateResult;
+                    currencyData.ExchangeRateValue = exchangeRateResult;
                 else
                 {
-                    currencyData.ExchangeRate = 0;
+                    currencyData.ExchangeRateValue = 0;
                     currencyData.RequestResultStatus = ProcessingResultDto.ResultType.Error;
                     currencyData.RequestResultMessage += "Ошибка при конвертации зачения обменного курса (ExchangeRate). ";
                 }

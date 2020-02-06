@@ -10,16 +10,20 @@ namespace RatesParsingConsole.DTO
     /// </summary>
     public class BankRequestDto
     {
+        /// <summary>
+        /// SWIFT код банка.
+        /// </summary>
+        public string SwiftCode { get; set; }
 
         /// <summary>
         /// Наименование банка.
         /// </summary>
-        public string BankName { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Текстовый код основной валюты банка.
         /// </summary>
-        public string BankCurrency { get; set; }
+        public string Currency { get; set; }
 
         /// <summary>
         /// Ссылка на страницу с курсами.
@@ -64,6 +68,6 @@ namespace RatesParsingConsole.DTO
         /// <summary>
         /// Команды для обработки строки текстового кода валюты TextCode.
         /// </summary>
-        public IDictionary<string, string[]> TextCodeScripts { get; set; }
+        public Dictionary<string, string[]> TextCodeScripts { get; set; }
     }
 }

@@ -15,9 +15,14 @@ namespace RatesParsingConsole.AspApp.Models
         public int ID { get; set; }
 
         /// <summary>
+        /// SWIFT код банка.
+        /// </summary>
+        public string SwiftCode { get; set; }
+
+        /// <summary>
         /// Наименование банка.
         /// </summary>
-        public string BankName { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Текстовый код основной валюты банка.

@@ -3,8 +3,8 @@ using RatesParsingConsole.AspApp.Models;
 using RatesParsingConsole.ConsoleApp;
 using RatesParsingConsole.DTO;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace RatesParsingConsole.AspApp
@@ -42,17 +42,7 @@ namespace RatesParsingConsole.AspApp
 
             // Передать данные запроса в консольное приложение и получить результаты.
             // В процессе конвертировать данные из domain в dto и при получении произвести обратную конвертацию: из dto в domain.
-
             ConsoleHome consoleHome = new ConsoleHome();
-
-            // Произвести настройку mapster, в связи с отсутствием поддержки IDictionary<,>.
-            /*TypeAdapterConfig<BankRequest, BankRequestDto>
-                .NewConfig()
-                .ConstructUsing(scr => new BankRequestDto
-                {
-                    TextCodeScripts = scr.TextCodeScripts,
-                    UnitScripts = scr.UnitScripts
-                });*/
 
             var requestsDto = requests.Adapt<IEnumerable<BankRequestDto>>();
 
@@ -65,8 +55,9 @@ namespace RatesParsingConsole.AspApp
 
             // Вывести полученные значения.
             var publishResults = new PublishResults();
-            publishResults.ShowExchangeRates(banks);
+            //publishResults.ShowExchangeRates(banks);
             publishResults.WriteToFileAsync(banks);
+            publishResults.SerializeToJsonFile(banks).Wait();
         }
 
         /// <summary>

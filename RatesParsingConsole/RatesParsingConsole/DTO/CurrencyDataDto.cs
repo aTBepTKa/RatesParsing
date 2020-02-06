@@ -22,6 +22,6 @@ namespace RatesParsingConsole.DTO
         /// <summary>
         /// Обменный курс валюты.
         /// </summary>
-        public decimal ExchangeRate { get; set; }
+        public decimal ExchangeRateValue { get; set; }
     }
 }

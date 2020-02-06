@@ -10,14 +10,24 @@ namespace RatesParsingConsole.DTO
     public class BankRatesDto : ProcessingResultDto
     {
         /// <summary>
+        /// SWIFT код банка.
+        /// </summary>
+        public string SwiftCode { get; set; }
+
+        /// <summary>
         /// Название банка.
         /// </summary>
-        public string BankName { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Код валюты банка.
         /// </summary>
-        public string BankCurrency { get; set; }
+        public string Currency { get; set; }
+
+        /// <summary>
+        /// Дата выполнения парсинга.
+        /// </summary>
+        public DateTime DateStamp { get; set; }
 
         /// <summary>
         /// Курсы валют банка.
